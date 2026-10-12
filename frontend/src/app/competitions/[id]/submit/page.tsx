@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Competition } from "@/types";
 import { apiClient } from "@/lib/api/client";
@@ -12,26 +12,22 @@ import {
 import {
   BracketButton,
   DarkroomCard,
-  ForensicChip,
 } from "@/components/hud";
 import {
   ArrowLeft,
   Sparkles,
   UploadCloud,
   CheckCircle2,
-  Clock,
-  ShieldCheck,
-  AlertCircle,
 } from "lucide-react";
 
 export default function SubmitEntryPage() {
   const params = useParams();
-  const router = useRouter();
   const id = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
 
   const [competition, setCompetition] = useState<Competition | null>(null);
   const [selectedPayload, setSelectedPayload] =
     useState<DroppedImagePayload | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [title, setTitle] = useState("");
   const [story, setStory] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -46,6 +42,9 @@ export default function SubmitEntryPage() {
       try {
         const comp = await apiClient.getCompetitionById(id);
         setCompetition(comp);
+        if (comp?.categories?.[0]) {
+          setSelectedCategory(comp.categories[0].code);
+        }
       } catch (err) {
         console.error("Failed to load competition", err);
       }
@@ -193,12 +192,36 @@ export default function SubmitEntryPage() {
 
           {/* 2. Metadata Inputs */}
           <div className="space-y-6 bg-surface-container-low p-6 rounded-sm border border-white/[0.08]">
+            {/* Category Genre Selector */}
+            {competition.categories && competition.categories.length > 0 && (
+              <div className="space-y-2">
+                <label
+                  htmlFor="category"
+                  className="text-xs font-bold uppercase tracking-wider text-white block"
+                >
+                  2. COMPETITION CATEGORY <span className="text-primary-container">*</span>
+                </label>
+                <select
+                  id="category"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full bg-surface-container border border-white/10 rounded-sm px-4 py-2.5 text-xs text-white focus:border-primary-container focus:outline-none uppercase"
+                >
+                  {competition.categories.map((c) => (
+                    <option key={c.id || c.code} value={c.code}>
+                      {c.name} ({c.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             <div className="space-y-2">
               <label
                 htmlFor="title"
                 className="text-xs font-bold uppercase tracking-wider text-white block"
               >
-                2. ARTWORK TITLE <span className="text-primary-container">*</span>
+                3. ARTWORK TITLE <span className="text-primary-container">*</span>
               </label>
               <input
                 id="title"

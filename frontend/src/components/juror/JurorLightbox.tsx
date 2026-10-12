@@ -17,11 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Info,
-  X,
-  Sparkles,
-  ShieldCheck,
   CheckCircle2,
-  Camera,
 } from "lucide-react";
 
 export interface JurorLightboxProps {
@@ -50,6 +46,18 @@ export function JurorLightbox({
 
   const currentSub = shortlist[currentIndex] || shortlist[0];
 
+  const assignSlot = (sub: Submission, slot: "firstPlace" | "secondPlace" | "thirdPlace") => {
+    setAssignments((prev) => {
+      const next = { ...prev };
+      // De-duplicate: if this sub is already in another slot, clear it
+      if (next.firstPlace?.id === sub.id) next.firstPlace = null;
+      if (next.secondPlace?.id === sub.id) next.secondPlace = null;
+      if (next.thirdPlace?.id === sub.id) next.thirdPlace = null;
+      next[slot] = sub;
+      return next;
+    });
+  };
+
   // Keyboard navigation & podium tagging shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -57,12 +65,12 @@ export function JurorLightbox({
         setCurrentIndex((prev) => (prev > 0 ? prev - 1 : shortlist.length - 1));
       } else if (e.key === "ArrowRight") {
         setCurrentIndex((prev) => (prev < shortlist.length - 1 ? prev + 1 : 0));
-      } else if (e.key === "1") {
-        setAssignments((a) => ({ ...a, firstPlace: currentSub }));
-      } else if (e.key === "2") {
-        setAssignments((a) => ({ ...a, secondPlace: currentSub }));
-      } else if (e.key === "3") {
-        setAssignments((a) => ({ ...a, thirdPlace: currentSub }));
+      } else if (e.key === "1" && currentSub) {
+        assignSlot(currentSub, "firstPlace");
+      } else if (e.key === "2" && currentSub) {
+        assignSlot(currentSub, "secondPlace");
+      } else if (e.key === "3" && currentSub) {
+        assignSlot(currentSub, "thirdPlace");
       } else if (e.key.toLowerCase() === "i") {
         setShowSidebar((s) => !s);
       }
@@ -73,10 +81,9 @@ export function JurorLightbox({
   }, [currentSub, shortlist.length]);
 
   const handleAssignCurrent = (slot: "firstPlace" | "secondPlace" | "thirdPlace") => {
-    setAssignments((prev) => ({
-      ...prev,
-      [slot]: currentSub,
-    }));
+    if (currentSub) {
+      assignSlot(currentSub, slot);
+    }
   };
 
   const handleClearSlot = (slot: "firstPlace" | "secondPlace" | "thirdPlace") => {

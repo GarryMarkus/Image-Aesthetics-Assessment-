@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Submission, PodiumRank } from "@/types";
-import { Trophy, Award, X, Sparkles, Send } from "lucide-react";
+import { Submission } from "@/types";
+import { Trophy, X, Send } from "lucide-react";
 import { BracketButton } from "@/components/hud";
 
 export interface PodiumAssignments {

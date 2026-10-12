@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { Competition, Submission } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { JurorLightbox } from "@/components/juror/JurorLightbox";
-import { DarkroomSkeleton } from "@/components/hud";
 
 export default function JurorReviewTheaterPage() {
   const params = useParams();

@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { Sparkles, AlertCircle, Lightbulb, Compass, MessageSquare } from "lucide-react";
+import { Sparkles, AlertCircle, Compass } from "lucide-react";
 import { DarkroomCard } from "@/components/hud";
 
 export interface CritiqueCardProps {

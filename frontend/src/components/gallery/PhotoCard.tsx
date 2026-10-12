@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
-import { Heart, Sparkles, User, Maximize2 } from "lucide-react";
+import { Heart, Sparkles, User } from "lucide-react";
 import { Submission } from "@/types";
-import { ExifHudBadge, ScoreTicker } from "@/components/hud";
+import { ExifHudBadge } from "@/components/hud";
 
 export interface PhotoCardProps {
   submission: Submission;
@@ -42,8 +41,17 @@ export function PhotoCard({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label={`${submission.title} by ${photographerName}`}
       onClick={() => onSelect?.(submission)}
-      className="group relative mb-4 overflow-hidden rounded-sm bg-surface-container-low border border-white/[0.06] hover:border-primary-container/40 transition-all duration-300 cursor-pointer select-none"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect?.(submission);
+        }
+      }}
+      className="group relative mb-4 overflow-hidden rounded-sm bg-surface-container-low border border-white/[0.06] hover:border-primary-container/40 focus:border-primary-container focus:outline-none transition-all duration-300 cursor-pointer select-none"
     >
       {/* Aspect Ratio Preservation with Responsive Next/Image */}
       <div className="relative w-full overflow-hidden">
@@ -55,6 +63,8 @@ export function PhotoCard({
         <img
           src={imageSrc}
           alt={submission.title}
+          loading="lazy"
+          decoding="async"
           onLoad={() => setImageLoaded(true)}
           className={`w-full h-auto object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] ${
             imageLoaded ? "opacity-100" : "opacity-0"

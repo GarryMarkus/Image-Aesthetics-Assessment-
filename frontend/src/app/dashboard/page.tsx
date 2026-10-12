@@ -1,18 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { Submission } from "@/types";
-import { apiClient } from "@/lib/api/client";
 import { mockSubmissions } from "@/mocks/fixtures";
-import { DarkroomCard, BracketButton, ForensicChip, DarkroomSkeleton } from "@/components/hud";
+import { DarkroomCard, BracketButton, DarkroomSkeleton } from "@/components/hud";
 import {
   User,
   Sparkles,
-  Trophy,
-  AlertCircle,
   Eye,
-  ArrowRight,
   ShieldAlert,
   Compass,
 } from "lucide-react";

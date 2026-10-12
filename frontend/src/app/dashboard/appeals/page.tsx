@@ -8,9 +8,6 @@ import {
   ShieldAlert,
   Upload,
   CheckCircle2,
-  AlertCircle,
-  FileText,
-  Clock,
 } from "lucide-react";
 
 export default function AppealsPortalPage() {

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Competition, CompetitionStatus } from "@/types";
+import { Competition } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { CompetitionCard } from "@/components/competition/CompetitionCard";
-import { Sparkles, Filter, Layers, Compass } from "lucide-react";
+import { Compass } from "lucide-react";
 import { DarkroomSkeleton } from "@/components/hud";
 
 export default function CompetitionsPage() {

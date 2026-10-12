@@ -5,7 +5,6 @@ import { LeaderboardEntry } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { LeaderboardView } from "@/components/leaderboard/LeaderboardView";
 import { DarkroomSkeleton } from "@/components/hud";
-import { Trophy } from "lucide-react";
 
 export default function GlobalLeaderboardPage() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);

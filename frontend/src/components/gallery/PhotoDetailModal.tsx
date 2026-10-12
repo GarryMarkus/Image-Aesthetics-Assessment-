@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { X, Sparkles, User, Camera, Calendar, MessageSquare, ShieldCheck, Heart } from "lucide-react";
+import { X, Camera, MessageSquare, Heart } from "lucide-react";
 import { Submission } from "@/types";
 import { ExifHudBadge, ScoreTicker, ForensicChip, BracketButton } from "@/components/hud";
 
@@ -19,6 +19,17 @@ export function PhotoDetailModal({ submission, onClose }: PhotoDetailModalProps)
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
+  // Lock body scroll while modal is active
+  useEffect(() => {
+    if (submission) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [submission]);
+
   if (!submission) return null;
 
   const imageSrc =
@@ -30,7 +41,15 @@ export function PhotoDetailModal({ submission, onClose }: PhotoDetailModalProps)
     submission.author?.name || submission.author?.username || "Photographer";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-lg select-none">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="photo-detail-modal-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-lg select-none"
+    >
       {/* Container Card */}
       <div className="relative w-full max-w-6xl max-h-[92vh] flex flex-col lg:flex-row bg-surface-container-lowest border border-white/15 rounded-sm overflow-hidden shadow-2xl shadow-black">
         {/* Close Button */}
@@ -38,6 +57,7 @@ export function PhotoDetailModal({ submission, onClose }: PhotoDetailModalProps)
           onClick={onClose}
           className="absolute top-3 right-3 z-30 p-2 bg-black/80 hover:bg-white text-white hover:text-black rounded-xs border border-white/20 transition-all font-mono"
           title="Close Modal (Esc)"
+          aria-label="Close Modal"
         >
           <X className="w-4 h-4" />
         </button>
@@ -70,7 +90,7 @@ export function PhotoDetailModal({ submission, onClose }: PhotoDetailModalProps)
                   ID::{submission.id}
                 </span>
               </div>
-              <h2 className="font-headline text-xl font-bold text-white leading-tight">
+              <h2 id="photo-detail-modal-title" className="font-headline text-xl font-bold text-white leading-tight">
                 {submission.title}
               </h2>
             </div>

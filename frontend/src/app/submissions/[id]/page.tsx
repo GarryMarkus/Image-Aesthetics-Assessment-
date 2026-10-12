@@ -15,12 +15,7 @@ import {
 import {
   ArrowLeft,
   Sparkles,
-  User,
   Heart,
-  MessageSquare,
-  Camera,
-  Share2,
-  Calendar,
 } from "lucide-react";
 
 export default function SubmissionPublicPage() {

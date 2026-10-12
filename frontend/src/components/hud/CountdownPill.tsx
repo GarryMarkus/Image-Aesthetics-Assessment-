@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Clock, CheckCircle2 } from "lucide-react";
 
 export interface CountdownPillProps {
   targetDate: string | Date;
@@ -14,6 +14,7 @@ export function CountdownPill({
   status = "OPEN",
   className = "",
 }: CountdownPillProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -29,6 +30,7 @@ export function CountdownPill({
   });
 
   useEffect(() => {
+    setIsMounted(true);
     const calculateTime = () => {
       const difference = +new Date(targetDate) - +new Date();
       if (difference <= 0) {
@@ -68,6 +70,17 @@ export function CountdownPill({
       >
         <span className="w-1.5 h-1.5 rounded-full bg-[#818cf8] animate-ping" />
         <span>AI JUDGING IN PROGRESS</span>
+      </span>
+    );
+  }
+
+  if (!isMounted) {
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm font-mono text-[10px] uppercase tracking-wider font-semibold border bg-surface-container-high/80 text-white border-white/10 ${className}`}
+      >
+        <Clock className="w-3 h-3 text-primary-container" />
+        <span>CALCULATING...</span>
       </span>
     );
   }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Competition } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { DarkroomCard, BracketButton, CountdownPill, DarkroomSkeleton } from "@/components/hud";
-import { Eye, Trophy, Sparkles, ShieldCheck, ArrowRight, UserCheck } from "lucide-react";
+import { ArrowRight, UserCheck } from "lucide-react";
 
 export default function JurorDashboardPage() {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -57,7 +57,6 @@ export default function JurorDashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {competitions.map((comp) => {
               const category = comp.categories?.[0];
-              const isReadyForJury = comp.status === "JUDGING" || comp.status === "SHORTLISTED" || comp.status === "OPEN";
 
               return (
                 <DarkroomCard

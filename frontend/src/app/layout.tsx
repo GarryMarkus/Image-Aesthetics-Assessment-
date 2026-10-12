@@ -33,6 +33,27 @@ export const metadata: Metadata = {
   title: "PIXEL PRIZE // The Photo Hall & AI Aesthetic Assessment",
   description:
     "Devfolio for photography competitions. AI-evaluated image aesthetics, forensic sensor validation, and master human jury podiums.",
+  keywords: [
+    "photography competition",
+    "image aesthetics assessment",
+    "photo contest",
+    "multimodal AI",
+    "ArtiMuse",
+    "EXIF validation",
+    "juried salon",
+  ],
+  openGraph: {
+    title: "PIXEL PRIZE // Devfolio for Photography Competitions",
+    description: "Multimodal AI evaluates aesthetics across 8 orthogonal dimensions. Final podiums selected by verified master jurors.",
+    siteName: "PIXEL PRIZE",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PIXEL PRIZE // The Photo Hall & AI Aesthetic Assessment",
+    description: "Devfolio for photography competitions judged by AI and verified master human jurors.",
+  },
 };
 
 export default function RootLayout({

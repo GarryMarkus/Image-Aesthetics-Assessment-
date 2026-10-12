@@ -61,10 +61,8 @@ export function AestheticRadarChart({
   return (
     <div className={`relative flex flex-col items-center select-none font-mono ${className}`}>
       <svg
-        width={size}
-        height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="overflow-visible"
+        className="w-full max-w-[360px] h-auto overflow-visible"
       >
         <defs>
           {/* Glowing gradient for the radar fill */}
@@ -137,6 +135,8 @@ export function AestheticRadarChart({
               key={dim.label}
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
+              onClick={() => setHoveredIndex(hoveredIndex === i ? null : i)}
+              onTouchStart={() => setHoveredIndex(i)}
               className="cursor-pointer"
             >
               <circle

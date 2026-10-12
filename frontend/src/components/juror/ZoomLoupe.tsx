@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import { ZoomIn, ZoomOut } from "lucide-react";
+import React, { useState, useRef, useCallback } from "react";
 
 export interface ZoomLoupeProps {
   imageSrc: string;
@@ -21,30 +20,42 @@ export function ZoomLoupe({
   const [isHovered, setIsHovered] = useState(false);
   const [loupePos, setLoupePos] = useState({ x: 0, y: 0 });
   const [bgPos, setBgPos] = useState({ x: 0, y: 0 });
-  const [isZoomActive, setIsZoomActive] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const updatePosition = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+
+      const posX = clientX - rect.left;
+      const posY = clientY - rect.top;
+
+      if (posX < 0 || posY < 0 || posX > rect.width || posY > rect.height) {
+        setIsHovered(false);
+        return;
+      }
+
+      setIsHovered(true);
+      setLoupePos({
+        x: posX - loupeSize / 2,
+        y: posY - loupeSize / 2,
+      });
+
+      const bgX = (posX / rect.width) * 100;
+      const bgY = (posY / rect.height) * 100;
+      setBgPos({ x: bgX, y: bgY });
+    },
+    [loupeSize]
+  );
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    updatePosition(e.clientX, e.clientY);
+  };
 
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    if (mouseX < 0 || mouseY < 0 || mouseX > rect.width || mouseY > rect.height) {
-      setIsHovered(false);
-      return;
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length > 0) {
+      updatePosition(e.touches[0].clientX, e.touches[0].clientY);
     }
-
-    setIsHovered(true);
-    setLoupePos({
-      x: mouseX - loupeSize / 2,
-      y: mouseY - loupeSize / 2,
-    });
-
-    const bgX = (mouseX / rect.width) * 100;
-    const bgY = (mouseY / rect.height) * 100;
-    setBgPos({ x: bgX, y: bgY });
   };
 
   return (
@@ -53,7 +64,13 @@ export function ZoomLoupe({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => setIsZoomActive(!isZoomActive)}
+      onTouchStart={(e) => {
+        if (e.touches.length > 0) {
+          updatePosition(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={() => setIsHovered(false)}
       className={`relative overflow-hidden cursor-crosshair select-none flex items-center justify-center max-h-[80vh] max-w-full ${className}`}
     >
       <img

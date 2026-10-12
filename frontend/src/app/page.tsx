@@ -8,11 +8,9 @@ import {
   Layers,
   Sparkles,
   Terminal,
-  Trophy,
 } from "lucide-react";
 import {
   BracketButton,
-  ScoreTicker,
   DarkroomSkeleton,
 } from "@/components/hud";
 import { Competition, Submission } from "@/types";

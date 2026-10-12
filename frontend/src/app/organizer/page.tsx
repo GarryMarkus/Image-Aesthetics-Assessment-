@@ -1,22 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { Competition, CompetitionStatus } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { DarkroomCard, BracketButton, CountdownPill, DarkroomSkeleton } from "@/components/hud";
 import {
   Compass,
   Plus,
-  Play,
   Lock,
   Sparkles,
   Trophy,
-  CheckCircle2,
-  AlertTriangle,
-  Layers,
   ArrowRight,
-  TrendingUp,
 } from "lucide-react";
 
 export default function OrganizerDashboardPage() {

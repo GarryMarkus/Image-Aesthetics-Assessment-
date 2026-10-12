@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Flame,
   Layers,
-  Sparkles,
   Info,
 } from "lucide-react";
 

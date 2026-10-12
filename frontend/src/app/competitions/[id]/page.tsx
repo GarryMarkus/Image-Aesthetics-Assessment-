@@ -11,10 +11,8 @@ import { LeaderboardView } from "@/components/leaderboard/LeaderboardView";
 import {
   Trophy,
   CheckCircle,
-  Calendar,
   Layers,
   Sparkles,
-  ShieldAlert,
   ArrowLeft,
   Sliders,
 } from "lucide-react";

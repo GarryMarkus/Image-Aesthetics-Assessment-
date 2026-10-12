@@ -5,7 +5,6 @@ import { AestheticScore, Submission } from "@/types";
 import { AestheticRadarChart } from "./AestheticRadarChart";
 import { CritiqueCard } from "./CritiqueCard";
 import { ScoreTicker, ForensicChip, DarkroomCard } from "@/components/hud";
-import { Sparkles, ShieldCheck, Flame, Info, Sliders, CheckCircle2 } from "lucide-react";
 
 export interface ScorecardBreakdownProps {
   score: AestheticScore;

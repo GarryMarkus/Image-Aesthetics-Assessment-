@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import { UploadCloud, Image as ImageIcon, Camera, AlertCircle, CheckCircle2, X } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { UploadCloud, AlertCircle, X } from "lucide-react";
 import { ExifMetadata } from "@/types";
 import { parseClientExif } from "@/lib/exif";
 import { ExifHudBadge, ForensicChip, BracketButton } from "@/components/hud";
@@ -31,6 +31,15 @@ export function PhotoDropzone({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Revoke object URL on unmount to prevent memory leaks with large 25MB files
+  useEffect(() => {
+    return () => {
+      if (selectedPayload?.previewUrl) {
+        URL.revokeObjectURL(selectedPayload.previewUrl);
+      }
+    };
+  }, [selectedPayload?.previewUrl]);
+
   const processFile = async (file: File) => {
     setErrorMessage(null);
     setIsProcessing(true);
@@ -51,14 +60,21 @@ export function PhotoDropzone({
       return;
     }
 
-    try {
-      const previewUrl = URL.createObjectURL(file);
+    // Revoke previous URL if any
+    if (selectedPayload?.previewUrl) {
+      URL.revokeObjectURL(selectedPayload.previewUrl);
+    }
 
-      // Measure dimensions
+    let previewUrl: string | null = null;
+    try {
+      previewUrl = URL.createObjectURL(file);
+
+      // Measure dimensions safely with onerror rejection
       const img = new window.Image();
       img.src = previewUrl;
-      await new Promise((resolve) => {
-        img.onload = resolve;
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Corrupted or unreadable image file"));
       });
 
       // Parse EXIF client-side
@@ -67,14 +83,17 @@ export function PhotoDropzone({
       onImageSelected({
         file,
         previewUrl,
-        width: img.naturalWidth,
-        height: img.naturalHeight,
+        width: img.naturalWidth || 1920,
+        height: img.naturalHeight || 1080,
         exif: parsed.exif,
         hasExif: parsed.hasExif,
       });
     } catch (err) {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       console.error("Failed to parse file", err);
-      setErrorMessage("Failed to read image metadata. Please try another file.");
+      setErrorMessage("Failed to decode image or read metadata. Please try another optical file.");
     } finally {
       setIsProcessing(false);
     }

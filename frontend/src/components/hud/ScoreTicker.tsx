@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Sparkles, Award, AlertCircle } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export interface ScoreTickerProps {
   score: number; // 0.0 to 100.0
@@ -71,11 +71,16 @@ export function ScoreTicker({
   const tierInfo = getScoreTier(score);
 
   useEffect(() => {
-    if (!animate) {
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!animate || prefersReducedMotion) {
       setDisplayedScore(score);
       return;
     }
 
+    let frameId: number;
     let start = 0;
     const duration = 1200; // ms
     const startTime = performance.now();
@@ -90,13 +95,18 @@ export function ScoreTicker({
       setDisplayedScore(Number(current.toFixed(1)));
 
       if (progress < 1) {
-        requestAnimationFrame(updateScore);
+        frameId = requestAnimationFrame(updateScore);
       } else {
         setDisplayedScore(score);
       }
     };
 
-    requestAnimationFrame(updateScore);
+    frameId = requestAnimationFrame(updateScore);
+    return () => {
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+    };
   }, [score, animate]);
 
   const sizeStyles = {

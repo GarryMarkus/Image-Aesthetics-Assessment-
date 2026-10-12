@@ -3,15 +3,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { CategoryCode, RubricWeights } from "@/types";
+import { CategoryCode } from "@/types";
 import { DarkroomCard, BracketButton } from "@/components/hud";
 import {
   ArrowLeft,
   ArrowRight,
-  Sliders,
-  Calendar,
   Sparkles,
-  Trophy,
   CheckCircle2,
   AlertCircle,
   RefreshCw,

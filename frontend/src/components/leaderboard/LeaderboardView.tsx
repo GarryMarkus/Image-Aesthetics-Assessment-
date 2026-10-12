@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { LeaderboardEntry } from "@/types";
-import { Trophy, Award, Sparkles, Heart, Camera, ArrowUpRight } from "lucide-react";
-import { BracketButton, ScoreTicker } from "@/components/hud";
+import { Trophy, Award, Sparkles, Heart, ArrowUpRight } from "lucide-react";
+import { BracketButton } from "@/components/hud";
 
 export interface LeaderboardViewProps {
   entries: LeaderboardEntry[];
@@ -104,6 +104,15 @@ export function LeaderboardView({
           </button>
         </div>
       </div>
+
+      {/* ZERO-STATE EMPTY LEADERBOARD */}
+      {entries.length === 0 && (
+        <div className="w-full py-16 text-center font-mono text-sm text-on-surface-variant border border-dashed border-white/10 rounded-sm space-y-2">
+          <Trophy className="w-8 h-8 text-on-surface-variant/40 mx-auto mb-2" />
+          <div className="font-bold text-white uppercase">NO SUBMISSIONS SCORED ON THIS TRACK YET</div>
+          <div className="text-xs text-on-surface-variant">Scores will populate as the multimodal AI evaluates entries.</div>
+        </div>
+      )}
 
       {/* TOP 3 PODIUM THEATER */}
       {top3.length > 0 && (

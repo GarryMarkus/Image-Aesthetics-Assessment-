@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Submission, AestheticScore } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { ScorecardBreakdown } from "@/components/scorecard/ScorecardBreakdown";
-import { ArrowLeft, Sparkles, Eye, Download, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Eye, ShieldCheck } from "lucide-react";
 import { BracketButton } from "@/components/hud";
 
 export default function DiagnosticScorecardPage() {

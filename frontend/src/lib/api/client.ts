@@ -174,7 +174,9 @@ export const apiClient = {
   async getJurorShortlist(competitionId: string): Promise<Submission[]> {
     if (IS_MOCK_MODE) {
       await delay(150);
-      return mockSubmissions.filter((s) => s.status === "SHORTLISTED" || s.totalScore && s.totalScore > 85);
+      return mockSubmissions.filter(
+        (s) => s.status === "SHORTLISTED" || (Boolean(s.totalScore) && (s.totalScore ?? 0) > 85)
+      );
     }
 
     const res = await fetch(
