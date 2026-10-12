@@ -58,7 +58,9 @@ export function createMediaWorker(): Worker<IngestJobData> {
         .filter((h: string) => Boolean(h) && h !== '0000000000000000');
 
       // 4. Run Forensic & Integrity Screening
-      const forensics = await forensicsService.inspectSubmission(rawBuffer, exifData, userHashes);
+      const forensics = await forensicsService.inspectSubmission(rawBuffer, exifData, userHashes, {
+        requireExif: submission.competition.requireExif,
+      });
 
       if (!forensics.isApproved) {
         logger.warn(`[MediaWorker] Submission ${submissionId} disqualified: ${forensics.disqualificationReason}`);

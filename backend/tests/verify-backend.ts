@@ -168,7 +168,7 @@ async function runBackendVerification() {
   console.log('\n--- Testing Layer 3: Forensics & Anti-Fraud Screening ---');
   const forensics = new ForensicsService();
 
-  // Test synthetic EXIF detection
+  // 1. Synthetic software signature detection
   const syntheticResult = await forensics.inspectSubmission(
     testPhotoBuffer,
     { cameraModel: 'Midjourney v6 Neural Engine', software: 'ComfyUI' },
@@ -176,15 +176,68 @@ async function runBackendVerification() {
   );
   assert(!syntheticResult.isApproved, 'Correctly flags synthetic AI software in metadata (Midjourney/ComfyUI)');
   assert(syntheticResult.disqualificationReason?.includes('DQ_SYNTHETIC_EXIF') === true, 'Assigned DQ_SYNTHETIC_EXIF code');
+  assert(syntheticResult.syntheticLikelihood >= 0.95, 'High synthetic confidence assigned to AI metadata signature');
 
-  // Test duplicate burst collision
+  // Test DALL-E / Stable Diffusion software tag
+  const dalleResult = await forensics.inspectSubmission(
+    testPhotoBuffer,
+    { cameraMake: 'OpenAI', software: 'DALL-E 3 Diffusion Generator' },
+    []
+  );
+  assert(!dalleResult.isApproved && dalleResult.disqualificationReason?.includes('DQ_SYNTHETIC_EXIF') === true, 'Flags DALL-E 3 software signature');
+
+  // 2. Clean optical photo passes
+  const cleanResult = await forensics.inspectSubmission(
+    testPhotoBuffer,
+    { cameraMake: 'Sony', cameraModel: 'ILCE-7M4', focalLength: 35, aperture: 2.8 },
+    []
+  );
+  assert(cleanResult.isApproved, 'Clean optical camera photo passes all forensic tiers');
+  assert(cleanResult.disqualificationReason === undefined, 'No disqualification reason assigned to authentic photo');
+
+  // 3. Mandatory EXIF enforcement check (requireExif option)
+  const missingExifMandatory = await forensics.inspectSubmission(
+    testPhotoBuffer,
+    {}, // Empty EXIF
+    [],
+    { requireExif: true }
+  );
+  assert(!missingExifMandatory.isApproved, 'Disqualifies submission when mandatory optical hardware EXIF is missing');
+  assert(missingExifMandatory.disqualificationReason?.includes('DQ_MISSING_EXIF') === true, 'Assigned DQ_MISSING_EXIF code');
+
+  const missingExifOptional = await forensics.inspectSubmission(
+    testPhotoBuffer,
+    {}, // Empty EXIF
+    [],
+    { requireExif: false }
+  );
+  assert(missingExifOptional.isApproved, 'Accepts submission with missing EXIF when competition allows it (requireExif: false)');
+
+  // 4. Duplicate burst collision check
   const duplicateResult = await forensics.inspectSubmission(
     testPhotoBuffer,
     { cameraModel: 'Sony A7 IV', software: 'Adobe Lightroom' },
-    [dHash1] // Collision with same hash
+    [dHash1] // Collision with same hash (Hamming distance 0 <= 4)
   );
   assert(!duplicateResult.isApproved, 'Correctly rejects duplicate burst upload with identical perceptual hash');
   assert(duplicateResult.disqualificationReason?.includes('DQ_DUPLICATE_BURST') === true, 'Assigned DQ_DUPLICATE_BURST code');
+
+  // Check unique photo with distinct hash does not collide
+  const distinctResult = await forensics.inspectSubmission(
+    testPhotoBuffer,
+    { cameraModel: 'Sony A7 IV' },
+    ['ffffffffffffffff'] // Far hash
+  );
+  assert(distinctResult.isApproved, 'Unique photo with distant hash passes duplicate check');
+
+  // 5. Texture & Laplacian frequency screening
+  const texture = await forensics.analyzeTextureAnomalies(testPhotoBuffer);
+  assert(typeof texture.meanLaplacian === 'number' && texture.meanLaplacian >= 0, 'Computes discrete Laplacian gradient variance');
+  assert(typeof texture.highFreqRatio === 'number' && texture.highFreqRatio >= 0, 'Computes high-frequency spatial ratio');
+
+  // 6. Watermark detection heuristic
+  const watermarkProbe = await forensics.detectWatermarkAnomaly(testPhotoBuffer);
+  assert(typeof watermarkProbe.hasWatermark === 'boolean', 'Watermark anomaly detector executes cleanly');
 
   // ---------------------------------------------------------------------------
   // Test 4: AI Model Adapter Contract & Scoring Mathematics (Layer 4)
