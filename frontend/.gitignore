@@ -1,0 +1,44 @@
+# ==============================================================================
+# Pixel Prize - Frontend (.gitignore)
+# ==============================================================================
+
+# Dependencies
+node_modules/
+.pnpm-store/
+.npm/
+
+# Next.js build output, export & cache
+.next/
+out/
+build/
+dist/
+.turbo/
+.cache/
+.eslintcache
+
+# Environment variables
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# Runtime logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage
+coverage/
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
