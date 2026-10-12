@@ -11,7 +11,7 @@ const envSchema = z.object({
   FRONTEND_ORIGIN: z.string().default('http://localhost:3000'),
 
   // Database
-  DATABASE_URL: z.string().default('file:./dev.db'),
+  DATABASE_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/pixelprize?schema=public'),
 
   // Redis (Queue & Caching)
   REDIS_URL: z.string().default('redis://localhost:6379'),
@@ -45,3 +45,7 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 export type Env = z.infer<typeof envSchema>;
+
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = env.DATABASE_URL;
+}

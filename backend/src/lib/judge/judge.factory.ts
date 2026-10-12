@@ -1,11 +1,12 @@
 import { env } from '../../config/env.js';
 import { IJudgeAdapter } from './judge.interface.js';
 import { GeminiJudgeAdapter } from './gemini.adapter.js';
+import { CustomModelJudgeAdapter } from './custom-model.adapter.js';
 import { MockJudgeAdapter } from './mock.adapter.js';
 import { logger } from '../logger.js';
 
-export function createJudgeAdapter(): IJudgeAdapter {
-  const provider = env.JUDGE_PROVIDER.toLowerCase();
+export function createJudgeAdapter(providerOverride?: 'gemini' | 'custom_model' | 'mock'): IJudgeAdapter {
+  const provider = (providerOverride || env.JUDGE_PROVIDER).toLowerCase();
 
   switch (provider) {
     case 'gemini': {
@@ -18,9 +19,9 @@ export function createJudgeAdapter(): IJudgeAdapter {
     }
 
     case 'custom_model': {
-      logger.info('🧠 Initializing CustomModelJudgeAdapter');
-      // Phase 2 custom model adapter endpoint can be hooked here
-      return new MockJudgeAdapter();
+      const endpoint = env.CUSTOM_MODEL_ENDPOINT || 'http://localhost:8000/v1/evaluate';
+      logger.info(`🧠 Initializing CustomModelJudgeAdapter connecting to endpoint: ${endpoint}`);
+      return new CustomModelJudgeAdapter(endpoint, env.CUSTOM_MODEL_SECRET);
     }
 
     case 'mock':

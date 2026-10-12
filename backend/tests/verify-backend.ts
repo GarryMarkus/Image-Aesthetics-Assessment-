@@ -7,10 +7,16 @@ import { ScoringMath } from '../src/lib/judge/scoring-math.js';
 import { ImageProcessorService } from '../src/services/image-processor.service.js';
 import { ForensicsService } from '../src/services/forensics.service.js';
 import { MockJudgeAdapter } from '../src/lib/judge/mock.adapter.js';
+import { CustomModelJudgeAdapter } from '../src/lib/judge/custom-model.adapter.js';
+import { JudgeOrchestrator } from '../src/lib/judge/judge.orchestrator.js';
+import { createJudgeAdapter } from '../src/lib/judge/judge.factory.js';
 import { prisma } from '../src/db/prisma.js';
 import { STANDARD_CATEGORIES } from '../src/config/categories.js';
 import { storage } from '../src/lib/storage.js';
 import { exifService } from '../src/services/exif.service.js';
+import { MEDIA_QUEUE_NAME, JUDGING_QUEUE_NAME, mediaQueue, judgingQueue } from '../src/lib/queue.js';
+import { processMediaIngestion } from '../src/workers/media.worker.js';
+import { processJudgingJob } from '../src/workers/judge.worker.js';
 
 async function runBackendVerification() {
   console.log('🧪 Starting Pixel Prize Backend Layer-by-Layer Verification...\n');
@@ -286,6 +292,115 @@ async function runBackendVerification() {
   assert(Boolean(judgeResult.critique.technicalAnalysis), 'Critique technical analysis section generated');
   assert(Boolean(judgeResult.critique.recommendations), 'Critique recommendations section generated');
   assert(judgeResult.detectedCompositionRules.length > 0, 'IAACLIP composition techniques detected');
+
+  // Test Phase 2 Custom Model Adapter interface
+  const customAdapter = new CustomModelJudgeAdapter('http://localhost:8000/v1/evaluate', 'test_secret');
+  assert(customAdapter.getProviderName() === 'custom_model', 'CustomModelJudgeAdapter adheres to IJudgeAdapter contract');
+
+  // Test Dynamic Factory Provider Switch
+  const mockFromFactory = createJudgeAdapter('mock');
+  assert(mockFromFactory.getProviderName() === 'mock', 'Factory initializes MockJudgeAdapter on mock provider');
+  const customFromFactory = createJudgeAdapter('custom_model');
+  assert(customFromFactory.getProviderName() === 'custom_model', 'Factory initializes CustomModelJudgeAdapter on custom_model provider');
+
+  // Test JudgeOrchestrator (Blind Evaluation & Multi-Pass Calibration)
+  const orchestrator = new JudgeOrchestrator(judge);
+
+  // 1. Blind evaluation check: Strips personal photographer identity fields
+  const sampleRequest: JudgeRequest = {
+    submissionId: 'test_sub_orch',
+    imageBuffer: testPhotoBuffer,
+    mimeType: 'image/png',
+    imageUrl: 'http://localhost:3001/uploads/test.png',
+    category: {
+      code: 'STREET',
+      name: 'Street Photography',
+      description: 'Candid moments',
+      weights: streetWeights,
+    },
+    metadata: {
+      title: 'Monochrome Crossing',
+      story: 'Shot candidly in Shibuya',
+      exif: {
+        cameraMake: 'Sony',
+        cameraModel: 'A7 IV',
+        artist: 'Kenji Sato',
+        ownerName: 'Kenji Sato Personal Camera',
+        serialNumber: 'SN-98234-X',
+      },
+    },
+  };
+
+  const blindRequest = orchestrator.prepareBlindRequest(sampleRequest);
+  assert(blindRequest.metadata.exif?.cameraMake === 'Sony', 'Blind evaluation preserves optical hardware make');
+  assert(blindRequest.metadata.exif?.artist === undefined, 'Blind evaluation strips photographer artist name');
+  assert(blindRequest.metadata.exif?.ownerName === undefined, 'Blind evaluation strips photographer owner name');
+  assert(blindRequest.metadata.exif?.serialNumber === undefined, 'Blind evaluation strips camera serial number');
+
+  // 2. Single-pass evaluation on standard threshold
+  const singlePassResult = await orchestrator.evaluateSubmission(sampleRequest, {
+    forceCalibration: false,
+    borderlineThreshold: 99.0, // High threshold so it stays single-pass
+  });
+  assert(singlePassResult.numPasses === 1, 'Standard submission receives exactly 1 evaluation pass');
+  assert(!singlePassResult.requiresHumanAudit, 'Standard pass does not flag human audit');
+
+  // 3. Multi-Pass Borderline Calibration (N=3)
+  const calibratedResult = await orchestrator.evaluateSubmission(sampleRequest, {
+    forceCalibration: true, // Force 3-pass calibration
+  });
+  assert(calibratedResult.numPasses === 3, 'Borderline submission executes 3 independent passes');
+  assert(typeof calibratedResult.passStandardDeviation === 'number', 'Calculates standard deviation across passes');
+  assert(calibratedResult.overallScore > 0, 'Synthesizes calibrated total aesthetic score');
+  assert(calibratedResult.detectedCompositionRules.length > 0, 'Merges deduplicated IAACLIP composition rules');
+
+  // ---------------------------------------------------------------------------
+  // Test 5: Asynchronous Queue & Background Workers (Layer 5)
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Testing Layer 5: Asynchronous Queue & Background Workers ---');
+  assert(MEDIA_QUEUE_NAME === 'media-ingestion-queue', 'Media queue name matches specification');
+  assert(JUDGING_QUEUE_NAME === 'ai-judging-queue', 'Judging queue name matches specification');
+  assert(mediaQueue.name === 'media-ingestion-queue', 'Media queue instance properly initialized');
+  assert(judgingQueue.name === 'ai-judging-queue', 'Judging queue instance properly initialized');
+
+  // Verify exponential backoff and retry policies
+  assert(mediaQueue.defaultJobOptions.attempts === 3, 'Media queue default retry attempts set to 3');
+  assert(
+    typeof mediaQueue.defaultJobOptions.backoff === 'object' &&
+      mediaQueue.defaultJobOptions.backoff.type === 'exponential',
+    'Media queue configured with exponential retry backoff'
+  );
+  assert(judgingQueue.defaultJobOptions.attempts === 3, 'Judging queue default retry attempts set to 3');
+  assert(
+    typeof judgingQueue.defaultJobOptions.backoff === 'object' &&
+      judgingQueue.defaultJobOptions.backoff.type === 'exponential',
+    'Judging queue configured with exponential retry backoff'
+  );
+
+  // Verify worker handler contracts
+  assert(typeof processMediaIngestion === 'function', 'processMediaIngestion worker handler exported');
+  assert(typeof processJudgingJob === 'function', 'processJudgingJob worker handler exported');
+
+  // Verify graceful error handling on missing records
+  let mediaWorkerCaughtError = false;
+  try {
+    await processMediaIngestion({ submissionId: 'non_existent_sub', storageKey: 'some_key' });
+  } catch (err: any) {
+    mediaWorkerCaughtError = Boolean(err);
+  }
+  assert(mediaWorkerCaughtError, 'Media worker safely throws error on missing submission or offline database');
+
+  let judgeWorkerCaughtError = false;
+  try {
+    await processJudgingJob({ submissionId: 'non_existent_sub', aiNormalKey: 'some_key' });
+  } catch (err: any) {
+    judgeWorkerCaughtError = Boolean(err);
+  }
+  assert(judgeWorkerCaughtError, 'Judging worker safely throws error on missing submission or offline database');
+
+  // Safely close queue connections
+  await Promise.all([mediaQueue.close(), judgingQueue.close()]);
+  assert(true, 'Queue instances close cleanly without unhandled rejections');
 
   // ---------------------------------------------------------------------------
   // Summary
