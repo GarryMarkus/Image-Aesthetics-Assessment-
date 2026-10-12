@@ -3,6 +3,7 @@ import { Pixelify_Sans, Space_Grotesk, JetBrains_Mono, Space_Mono } from "next/f
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { TelemetryTicker } from "@/components/layout/TelemetryTicker";
+import { AuthProvider } from "@/context/AuthContext";
 
 const pixelifySans = Pixelify_Sans({
   subsets: ["latin"],
@@ -67,13 +68,15 @@ export default function RootLayout({
       className={`dark ${pixelifySans.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${spaceMono.variable}`}
     >
       <body className="bg-background text-on-surface font-mono antialiased min-h-screen selection:bg-primary-container selection:text-on-primary-fixed">
-        <Header />
-        <div className="pt-16">
-          <TelemetryTicker />
-          <main className="w-full min-h-[calc(100vh-100px)] grid-bg">
-            {children}
-          </main>
-        </div>
+        <AuthProvider>
+          <Header />
+          <div className="pt-16">
+            <TelemetryTicker />
+            <main className="w-full min-h-[calc(100vh-100px)] grid-bg">
+              {children}
+            </main>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

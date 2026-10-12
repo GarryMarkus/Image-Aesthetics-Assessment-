@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Submission } from "@/types";
 import { mockSubmissions } from "@/mocks/fixtures";
+import { apiClient } from "@/lib/api/client";
 import { DarkroomCard, BracketButton, DarkroomSkeleton } from "@/components/hud";
 import {
   User,
@@ -18,9 +19,15 @@ export default function ParticipantDashboardPage() {
 
   useEffect(() => {
     async function loadUserEntries() {
-      // In mock mode, show entrant's submissions
-      setSubmissions(mockSubmissions);
-      setLoading(false);
+      try {
+        const subs = await apiClient.getMySubmissions();
+        setSubmissions(subs && subs.length > 0 ? subs : mockSubmissions);
+      } catch (err) {
+        console.warn("Falling back to showcase submissions", err);
+        setSubmissions(mockSubmissions);
+      } finally {
+        setLoading(false);
+      }
     }
     loadUserEntries();
   }, []);

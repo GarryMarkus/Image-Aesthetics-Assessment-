@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import { authController } from '../controllers/auth.controller.js';
 import { competitionController } from '../controllers/competition.controller.js';
 import { submissionController } from '../controllers/submission.controller.js';
@@ -110,11 +110,19 @@ subRouter.post(
   validateBody(presignedUrlRequestSchema),
   (req, res, next) => submissionController.requestPresignedUrl(req, res).catch(next)
 );
+subRouter.put(
+  '/upload',
+  express.raw({ type: '*/*', limit: '25mb' }),
+  (req, res, next) => submissionController.handleLocalUpload(req, res).catch(next)
+);
 subRouter.post(
   '/',
   authenticate,
   validateBody(confirmSubmissionSchema),
   (req, res, next) => submissionController.confirm(req, res).catch(next)
+);
+subRouter.get('/my', authenticate, (req, res, next) =>
+  submissionController.getMySubmissions(req, res).catch(next)
 );
 subRouter.get('/:id', (req, res, next) =>
   submissionController.getById(req, res).catch(next)

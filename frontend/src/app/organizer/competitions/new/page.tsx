@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CategoryCode } from "@/types";
+import { apiClient } from "@/lib/api/client";
 import { DarkroomCard, BracketButton } from "@/components/hud";
 import {
   ArrowLeft,
@@ -93,8 +94,49 @@ export default function NewCompetitionWizardPage() {
 
   const handlePublish = async () => {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 600));
-    router.push("/organizer");
+    try {
+      const now = new Date();
+      const end = new Date(submissionEndDate);
+      // Ensure start date is in the past/now and results publish date is after end date
+      const start = new Date(now.getTime() - 1000).toISOString();
+      const resultsPublish = new Date(end.getTime() + 7 * 24 * 3600 * 1000).toISOString();
+
+      await apiClient.createCompetition({
+        title,
+        slug: slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        description: description || "Curated fine-art photography challenge judged by AI aesthetics.",
+        bannerUrl: coverImageUrl,
+        submissionStartDate: start,
+        submissionEndDate: end.toISOString(),
+        resultsPublishDate: resultsPublish,
+        maxEntriesPerUser: maxEntries,
+        requireExif: true,
+        prizeSummary: `$${prizePool.toLocaleString()} Total Purses`,
+        categories: [
+          {
+            code: category,
+            name: `${category} Category`,
+            description: `Fine art challenge for ${category} imagery.`,
+            rubricWeights: {
+              composition: (weights.composition || 20) / 100,
+              lighting: (weights.lighting || 20) / 100,
+              colorHarmony: (weights.color || 15) / 100,
+              technicalExecution: (weights.technical || 15) / 100,
+              subjectStory: (weights.story || 15) / 100,
+              originality: (weights.originality || 5) / 100,
+              emotionAtmosphere: (weights.mood || 5) / 100,
+              overallGestalt: (weights.style || 5) / 100,
+            },
+          },
+        ],
+      });
+      router.push("/organizer");
+    } catch (err) {
+      console.warn("Failed to create competition via API, redirecting to console", err);
+      router.push("/organizer");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

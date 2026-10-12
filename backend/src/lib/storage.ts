@@ -120,7 +120,7 @@ class LocalStorageService implements StorageService {
   async getPresignedUploadUrl(key: string, _mimeType: string): Promise<string> {
     this.resolveSafePath(key);
     // For local dev, direct endpoint on the server
-    return `${env.FRONTEND_ORIGIN}/api/mock-upload?key=${encodeURIComponent(key)}`;
+    return `http://localhost:${env.PORT}/api/submissions/upload?key=${encodeURIComponent(key)}`;
   }
 
   async uploadBuffer(key: string, buffer: Buffer, _mimeType = 'application/octet-stream'): Promise<string> {

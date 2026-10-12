@@ -26,7 +26,7 @@ export default function DiagnosticScorecardPage() {
           apiClient.getSubmissionScorecard(id),
         ]);
         setSubmission(sub);
-        setScore(sc);
+        setScore(sc || sub?.aestheticScore || null);
       } catch (err) {
         console.error("Failed to load scorecard", err);
       } finally {

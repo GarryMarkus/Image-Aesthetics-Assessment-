@@ -190,6 +190,7 @@ export interface LeaderboardEntry {
 }
 
 export interface PresignedUrlResponse {
+  submissionId?: string;
   uploadUrl: string;
   fileKey: string;
   publicUrl: string;

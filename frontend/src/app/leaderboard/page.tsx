@@ -15,8 +15,10 @@ export default function GlobalLeaderboardPage() {
     async function load() {
       setLoading(true);
       try {
+        const comps = await apiClient.getCompetitions();
+        const primaryId = comps[0]?.id || "urban-monochromes-2026";
         const data = await apiClient.getCompetitionLeaderboard(
-          "comp_portrait_2026",
+          primaryId,
           track
         );
         setEntries(data);

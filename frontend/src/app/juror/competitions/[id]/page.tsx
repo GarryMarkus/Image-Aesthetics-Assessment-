@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { Competition, Submission } from "@/types";
 import { apiClient } from "@/lib/api/client";
 import { JurorLightbox } from "@/components/juror/JurorLightbox";
@@ -43,8 +44,14 @@ export default function JurorReviewTheaterPage() {
 
   if (!competition || shortlist.length === 0) {
     return (
-      <div className="w-full h-[calc(100vh-64px)] bg-[#090A0F] flex items-center justify-center font-mono text-xs text-on-surface-variant">
-        No shortlisted finalists currently queued for this competition.
+      <div className="w-full h-[calc(100vh-64px)] bg-[#090A0F] flex flex-col items-center justify-center gap-4 font-mono text-xs text-on-surface-variant">
+        <span>No shortlisted finalists currently queued for this competition.</span>
+        <Link
+          href="/juror"
+          className="text-primary-container hover:underline uppercase font-bold"
+        >
+          RETURN TO JUROR CONSOLE
+        </Link>
       </div>
     );
   }

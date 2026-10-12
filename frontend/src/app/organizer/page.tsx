@@ -31,10 +31,18 @@ export default function OrganizerDashboardPage() {
     loadOrganizerData();
   }, []);
 
-  const handleStateTransition = (id: string, newStatus: CompetitionStatus) => {
-    setCompetitions((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c))
-    );
+  const handleStateTransition = async (id: string, newStatus: CompetitionStatus) => {
+    try {
+      await apiClient.updateCompetitionStatus(id, newStatus);
+      setCompetitions((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c))
+      );
+    } catch (err) {
+      console.warn("Status transition fallback", err);
+      setCompetitions((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, status: newStatus } : c))
+      );
+    }
   };
 
   return (

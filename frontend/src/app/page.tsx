@@ -26,10 +26,9 @@ export default function HomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [comps, gal] = await Promise.all([
-          apiClient.getCompetitions(),
-          apiClient.getCompetitionGallery("comp_portrait_2026"),
-        ]);
+        const comps = await apiClient.getCompetitions();
+        const primaryCompId = comps[0]?.id || "urban-monochromes-2026";
+        const gal = await apiClient.getCompetitionGallery(primaryCompId);
         setCompetitions(comps.slice(0, 3));
         setSubmissions(gal.submissions);
       } catch (err) {

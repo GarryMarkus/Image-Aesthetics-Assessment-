@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { submissionService } from '../services/submission.service.js';
+import { storage } from '../lib/storage.js';
 import { BadRequestError } from '../lib/errors.js';
 
 export class SubmissionController {
@@ -63,6 +64,26 @@ export class SubmissionController {
     const { id } = req.params;
     const result = await submissionService.castCommunityVote(id, userId);
     res.json(result);
+  }
+
+  async getMySubmissions(req: Request, res: Response) {
+    const userId = req.user!.id;
+    const submissions = await submissionService.getUserSubmissions(userId);
+    res.json(submissions);
+  }
+
+  async handleLocalUpload(req: Request, res: Response) {
+    const key = req.query.key as string;
+    if (!key) {
+      throw new BadRequestError('Storage key parameter is required');
+    }
+    const contentType = (req.headers['content-type'] as string) || 'image/jpeg';
+    const buffer = req.body;
+    if (!Buffer.isBuffer(buffer) || buffer.length === 0) {
+      throw new BadRequestError('Upload payload must be a non-empty binary buffer');
+    }
+    const publicUrl = await storage.uploadBuffer(key, buffer, contentType);
+    res.json({ success: true, key, publicUrl });
   }
 }
 

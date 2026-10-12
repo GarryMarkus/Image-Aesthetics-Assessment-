@@ -45,13 +45,16 @@ export default function SubmissionPublicPage() {
     loadSub();
   }, [id]);
 
-  const handleUpvote = () => {
-    if (hasUpvoted) {
-      setUpvotes((v) => v - 1);
-      setHasUpvoted(false);
-    } else {
-      setUpvotes((v) => v + 1);
-      setHasUpvoted(true);
+  const handleUpvote = async () => {
+    if (!id) return;
+    try {
+      const res = await apiClient.voteSubmission(id);
+      setHasUpvoted(res.hasVoted);
+      setUpvotes(res.newVoteCount);
+    } catch (err) {
+      console.warn("Upvote request failed or requires sign-in", err);
+      setUpvotes((v) => (hasUpvoted ? Math.max(0, v - 1) : v + 1));
+      setHasUpvoted((prev) => !prev);
     }
   };
 

@@ -3,11 +3,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, Sparkles, Menu, X, Compass, Layers, Trophy, Eye, Plus } from "lucide-react";
+import { User, Sparkles, Menu, X, Compass, Layers, Trophy, Eye, LogOut, ShieldCheck, Briefcase } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout, role } = useAuth();
 
   const navLinks = [
     { label: "[THE HALL]", href: "/", icon: Layers },
@@ -15,6 +17,10 @@ export function Header() {
     { label: "[LEADERBOARD]", href: "/leaderboard", icon: Trophy },
     { label: "[JUROR LIGHTBOX]", href: "/juror", icon: Eye },
   ];
+
+  if (role === "ORGANIZER" || role === "ADMIN") {
+    navLinks.push({ label: "[ORGANIZER]", href: "/organizer", icon: Briefcase });
+  }
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -63,30 +69,60 @@ export function Header() {
 
         {/* CTAs & Profile */}
         <div className="flex items-center gap-3 shrink-0 font-mono text-[11px]">
-          <Link
-            href="/dashboard"
-            className="hidden sm:inline-block text-primary-container hover:bg-surface-container px-3 py-1.5 uppercase transition-colors"
-          >
-            {`{CREATOR VAULT}`}
-          </Link>
-          
-          <Link
-            href="/competitions"
-            className="bg-primary-container text-on-primary-fixed px-3 sm:px-4 py-1.5 hover:bg-white hover:text-black transition-all uppercase font-bold tracking-wider rounded-sm flex items-center gap-1.5 shadow-sm shadow-primary-container/20"
-          >
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
-            <span className="hidden xs:inline">{`{ENTER CONTEST}`}</span>
-            <span className="xs:hidden">ENTER</span>
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="hidden sm:inline-block text-primary-container hover:bg-surface-container px-3 py-1.5 uppercase transition-colors"
+              >
+                {role === "ORGANIZER" ? "{ORGANIZER}" : role === "JUROR" ? "{JUROR}" : "{CREATOR VAULT}"}
+              </Link>
+              
+              <Link
+                href="/competitions"
+                className="bg-primary-container text-on-primary-fixed px-3 sm:px-4 py-1.5 hover:bg-white hover:text-black transition-all uppercase font-bold tracking-wider rounded-sm flex items-center gap-1.5 shadow-sm shadow-primary-container/20"
+              >
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden xs:inline">{`{ENTER CONTEST}`}</span>
+                <span className="xs:hidden">ENTER</span>
+              </Link>
 
-          <Link
-            href="/dashboard"
-            className="w-8 h-8 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.1] flex items-center justify-center text-white transition-colors ml-1"
-            title="Creator Dashboard & Vault"
-            aria-label="Creator Dashboard & Profile"
-          >
-            <User className="w-4 h-4 text-on-surface-variant hover:text-primary-container transition-colors" />
-          </Link>
+              <Link
+                href="/dashboard"
+                className="w-8 h-8 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.1] flex items-center justify-center text-white transition-colors ml-1"
+                title={`${user?.name || user?.username} (${role})`}
+                aria-label="Creator Dashboard & Profile"
+              >
+                <User className="w-4 h-4 text-primary-container" />
+              </Link>
+
+              <button
+                onClick={logout}
+                title="Sign out of dossier"
+                className="p-1.5 text-on-surface-variant hover:text-status-error transition-colors ml-0.5"
+                aria-label="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/auth/signin"
+                className="text-white hover:text-primary-container px-3 py-1.5 uppercase transition-colors font-bold"
+              >
+                {"{SIGN IN}"}
+              </Link>
+
+              <Link
+                href="/auth/signup"
+                className="bg-primary-container text-black px-3 sm:px-4 py-1.5 hover:bg-white transition-all uppercase font-bold tracking-wider rounded-sm flex items-center gap-1.5 shadow-sm shadow-primary-container/20"
+              >
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span>JOIN SALON</span>
+              </Link>
+            </>
+          )}
 
           {/* Mobile Menu Toggle Button */}
           <button
@@ -118,33 +154,55 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-xs uppercase tracking-wider transition-colors ${
                     active
-                      ? "bg-primary-container/15 text-primary-container font-bold border border-primary-container/30"
+                      ? "bg-surface-container-high text-primary-container font-semibold border-l-2 border-primary-container"
                       : "text-on-surface-variant hover:text-white hover:bg-white/[0.04]"
                   }`}
                 >
-                  <Icon className="w-4 h-4 text-primary-container" />
+                  <Icon className="w-4 h-4 shrink-0" />
                   <span>{link.label}</span>
                 </Link>
               );
             })}
+          </div>
 
-            <Link
-              href="/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-xs uppercase tracking-wider text-on-surface-variant hover:text-white hover:bg-white/[0.04]"
-            >
-              <User className="w-4 h-4 text-primary-container" />
-              <span>[CREATOR DASHBOARD]</span>
-            </Link>
-
-            <Link
-              href="/organizer/competitions/new"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-sm text-xs uppercase tracking-wider text-on-surface-variant hover:text-white hover:bg-white/[0.04]"
-            >
-              <Plus className="w-4 h-4 text-primary-container" />
-              <span>[HOST A SALON]</span>
-            </Link>
+          <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
+            {isAuthenticated ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-primary-container font-bold uppercase"
+                >
+                  {`{${user?.username || "MY DASHBOARD"}}`}
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-status-error font-bold uppercase"
+                >
+                  LOGOUT
+                </button>
+              </>
+            ) : (
+              <div className="w-full flex items-center justify-between">
+                <Link
+                  href="/auth/signin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-white hover:text-primary-container uppercase font-bold"
+                >
+                  SIGN IN
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-primary-container uppercase font-bold"
+                >
+                  CREATE ACCOUNT
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
