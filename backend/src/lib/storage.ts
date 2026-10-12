@@ -109,7 +109,7 @@ class LocalStorageService implements StorageService {
     return `${env.FRONTEND_ORIGIN}/api/mock-upload?key=${encodeURIComponent(key)}`;
   }
 
-  async uploadBuffer(key: string, buffer: Buffer): Promise<string> {
+  async uploadBuffer(key: string, buffer: Buffer, _mimeType = 'application/octet-stream'): Promise<string> {
     const filePath = path.join(this.uploadDir, key);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, buffer);

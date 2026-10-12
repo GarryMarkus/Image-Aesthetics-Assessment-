@@ -1,5 +1,6 @@
 import { PrismaClient, Role, CompetitionStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { STANDARD_CATEGORIES } from '../src/config/categories.js';
 
 const prisma = new PrismaClient();
 
@@ -68,7 +69,7 @@ async function main() {
     participant: participant.email,
   });
 
-  // 2. Seed Flagship Competition
+  // 2. Seed Flagship Competition: Urban Monochromes
   const competition = await prisma.competition.upsert({
     where: { slug: 'urban-monochromes-2026' },
     update: {},
@@ -88,34 +89,22 @@ async function main() {
       categories: {
         create: [
           {
-            code: 'STREET',
-            name: 'Street & Candid Moments',
-            description: 'Unposed, authentic decisive moments captured in public urban environments.',
-            rubricWeights: {
-              composition: 0.15,
-              lighting: 0.10,
-              colorHarmony: 0.05,
-              technicalExecution: 0.05,
-              subjectStory: 0.30,
-              originality: 0.20,
-              emotionAtmosphere: 0.15,
-              overallGestalt: 0.00,
-            },
+            code: STANDARD_CATEGORIES.STREET.code,
+            name: STANDARD_CATEGORIES.STREET.name,
+            description: STANDARD_CATEGORIES.STREET.description,
+            rubricWeights: STANDARD_CATEGORIES.STREET.rubricWeights,
           },
           {
-            code: 'MONOCHROME',
-            name: 'Fine-Art Monochrome',
-            description: 'Mastery of light, shadow, zone contrast, and tonal separation in black and white.',
-            rubricWeights: {
-              composition: 0.20,
-              lighting: 0.30,
-              colorHarmony: 0.00,
-              technicalExecution: 0.15,
-              subjectStory: 0.15,
-              originality: 0.10,
-              emotionAtmosphere: 0.05,
-              overallGestalt: 0.05,
-            },
+            code: STANDARD_CATEGORIES.MONOCHROME.code,
+            name: STANDARD_CATEGORIES.MONOCHROME.name,
+            description: STANDARD_CATEGORIES.MONOCHROME.description,
+            rubricWeights: STANDARD_CATEGORIES.MONOCHROME.rubricWeights,
+          },
+          {
+            code: STANDARD_CATEGORIES.ARCHITECTURE.code,
+            name: STANDARD_CATEGORIES.ARCHITECTURE.name,
+            description: STANDARD_CATEGORIES.ARCHITECTURE.description,
+            rubricWeights: STANDARD_CATEGORIES.ARCHITECTURE.rubricWeights,
           },
         ],
       },
@@ -131,7 +120,7 @@ async function main() {
 
   console.log('✅ Seeded competition:', competition.title);
 
-  // 3. Seed Landscape Contest
+  // 3. Seed Landscape & Wilderness Contest
   const landscapeComp = await prisma.competition.upsert({
     where: { slug: 'untamed-horizons-2026' },
     update: {},
@@ -151,34 +140,22 @@ async function main() {
       categories: {
         create: [
           {
-            code: 'LANDSCAPE',
-            name: 'Landscape & Nature',
-            description: 'Vistas, mountain peaks, coastal drama, and geological majesty.',
-            rubricWeights: {
-              composition: 0.25,
-              lighting: 0.20,
-              colorHarmony: 0.20,
-              technicalExecution: 0.15,
-              subjectStory: 0.05,
-              originality: 0.05,
-              emotionAtmosphere: 0.05,
-              overallGestalt: 0.05,
-            },
+            code: STANDARD_CATEGORIES.LANDSCAPE.code,
+            name: STANDARD_CATEGORIES.LANDSCAPE.name,
+            description: STANDARD_CATEGORIES.LANDSCAPE.description,
+            rubricWeights: STANDARD_CATEGORIES.LANDSCAPE.rubricWeights,
           },
           {
-            code: 'NIGHT',
-            name: 'Night & Astrophotography',
-            description: 'Cosmic night skies, milky way alignments, low-noise star fields.',
-            rubricWeights: {
-              composition: 0.20,
-              lighting: 0.25,
-              colorHarmony: 0.15,
-              technicalExecution: 0.25,
-              subjectStory: 0.05,
-              originality: 0.05,
-              emotionAtmosphere: 0.05,
-              overallGestalt: 0.00,
-            },
+            code: STANDARD_CATEGORIES.NIGHT.code,
+            name: STANDARD_CATEGORIES.NIGHT.name,
+            description: STANDARD_CATEGORIES.NIGHT.description,
+            rubricWeights: STANDARD_CATEGORIES.NIGHT.rubricWeights,
+          },
+          {
+            code: STANDARD_CATEGORIES.WILDLIFE.code,
+            name: STANDARD_CATEGORIES.WILDLIFE.name,
+            description: STANDARD_CATEGORIES.WILDLIFE.description,
+            rubricWeights: STANDARD_CATEGORIES.WILDLIFE.rubricWeights,
           },
         ],
       },
@@ -193,7 +170,58 @@ async function main() {
   });
 
   console.log('✅ Seeded competition:', landscapeComp.title);
-  console.log('🎉 Seeding completed successfully!');
+
+  // 4. Seed Masters Salon: General, Portrait & Macro
+  const mastersComp = await prisma.competition.upsert({
+    where: { slug: 'grand-masters-salon-2026' },
+    update: {},
+    create: {
+      title: 'Grand Masters Salon: Human & Optical Form',
+      slug: 'grand-masters-salon-2026',
+      description: 'Celebrating high-fidelity human portraits, macro optics, and open creative aesthetic mastery.',
+      bannerUrl: 'https://media.pixelprize.org/banners/masters.webp',
+      status: CompetitionStatus.OPEN,
+      submissionStartDate: new Date('2026-10-15T00:00:00Z'),
+      submissionEndDate: new Date('2026-12-31T23:59:59Z'),
+      resultsPublishDate: new Date('2027-01-10T18:00:00Z'),
+      maxEntriesPerUser: 4,
+      requireExif: true,
+      prizeSummary: '$10,000 Hasselblad Fellowship',
+      organizerId: organizer.id,
+      categories: {
+        create: [
+          {
+            code: STANDARD_CATEGORIES.GENERAL.code,
+            name: STANDARD_CATEGORIES.GENERAL.name,
+            description: STANDARD_CATEGORIES.GENERAL.description,
+            rubricWeights: STANDARD_CATEGORIES.GENERAL.rubricWeights,
+          },
+          {
+            code: STANDARD_CATEGORIES.PORTRAIT.code,
+            name: STANDARD_CATEGORIES.PORTRAIT.name,
+            description: STANDARD_CATEGORIES.PORTRAIT.description,
+            rubricWeights: STANDARD_CATEGORIES.PORTRAIT.rubricWeights,
+          },
+          {
+            code: STANDARD_CATEGORIES.MACRO.code,
+            name: STANDARD_CATEGORIES.MACRO.name,
+            description: STANDARD_CATEGORIES.MACRO.description,
+            rubricWeights: STANDARD_CATEGORIES.MACRO.rubricWeights,
+          },
+        ],
+      },
+      jurorAssignments: {
+        create: [
+          {
+            jurorId: juror.id,
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('✅ Seeded competition:', mastersComp.title);
+  console.log('🎉 Seeding completed successfully! All 9 TAD66K categories populated.');
 }
 
 main()

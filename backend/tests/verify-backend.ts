@@ -7,6 +7,10 @@ import { ScoringMath } from '../src/lib/judge/scoring-math.js';
 import { ImageProcessorService } from '../src/services/image-processor.service.js';
 import { ForensicsService } from '../src/services/forensics.service.js';
 import { MockJudgeAdapter } from '../src/lib/judge/mock.adapter.js';
+import { prisma } from '../src/db/prisma.js';
+import { STANDARD_CATEGORIES } from '../src/config/categories.js';
+import { storage } from '../src/lib/storage.js';
+import { exifService } from '../src/services/exif.service.js';
 
 async function runBackendVerification() {
   console.log('🧪 Starting Pixel Prize Backend Layer-by-Layer Verification...\n');
@@ -58,20 +62,135 @@ async function runBackendVerification() {
   assert(AppealStatus.PENDING === 'PENDING', 'AppealStatus enum includes PENDING');
 
   // ---------------------------------------------------------------------------
-  // Test 1: Scoring Mathematical Formulations (ArtiMuse / TAD66K)
+  // Test 1: Data Access & Prisma ORM Schema (Layer 1)
   // ---------------------------------------------------------------------------
-  console.log('--- Testing Layer 4: Scoring Mathematical Formulas ---');
-  const streetWeights: RubricWeights = {
-    composition: 0.15,
-    lighting: 0.10,
-    colorHarmony: 0.05,
-    technicalExecution: 0.05,
-    subjectStory: 0.30,
-    originality: 0.20,
-    emotionAtmosphere: 0.15,
-    overallGestalt: 0.00,
-  };
+  console.log('\n--- Testing Layer 1: Data Access & Prisma ORM Models ---');
+  assert(Boolean(prisma.user), 'Prisma User model delegate is generated');
+  assert(Boolean(prisma.competition), 'Prisma Competition model delegate is generated');
+  assert(Boolean(prisma.competitionCategory), 'Prisma CompetitionCategory model delegate is generated');
+  assert(Boolean(prisma.submission), 'Prisma Submission model delegate is generated');
+  assert(Boolean(prisma.imageResource), 'Prisma ImageResource model delegate is generated');
+  assert(Boolean(prisma.exifMetadata), 'Prisma ExifMetadata model delegate is generated');
+  assert(Boolean(prisma.aestheticScore), 'Prisma AestheticScore model delegate is generated');
+  assert(Boolean(prisma.jurorVerdict), 'Prisma JurorVerdict model delegate is generated');
+  assert(Boolean(prisma.communityVote), 'Prisma CommunityVote model delegate is generated');
+  assert(Boolean(prisma.appealTicket), 'Prisma AppealTicket model delegate is generated');
+  assert(Boolean(prisma.jurorAssignment), 'Prisma JurorAssignment model delegate is generated');
 
+  // Verify all 9 TAD66K categories
+  const categoryKeys = Object.keys(STANDARD_CATEGORIES);
+  assert(categoryKeys.length === 9, `All 9 TAD66K standard categories defined (found ${categoryKeys.length})`);
+  
+  for (const [code, def] of Object.entries(STANDARD_CATEGORIES)) {
+    assert(ScoringMath.validateWeights(def.rubricWeights), `Category ${code} rubric weights sum to exactly 1.0`);
+  }
+
+  assert(STANDARD_CATEGORIES.MONOCHROME.rubricWeights.colorHarmony === 0, 'MONOCHROME category sets colorHarmony weight to 0.0');
+  assert(STANDARD_CATEGORIES.MACRO.rubricWeights.technicalExecution === 0.35, 'MACRO category prioritizes technical sharpness (0.35)');
+  assert(STANDARD_CATEGORIES.STREET.rubricWeights.subjectStory === 0.30, 'STREET category prioritizes storytelling & decisive moment (0.30)');
+  assert(STANDARD_CATEGORIES.ARCHITECTURE.rubricWeights.composition === 0.30, 'ARCHITECTURE category prioritizes composition & geometry (0.30)');
+
+  // ---------------------------------------------------------------------------
+  // Test 2: Storage & Media Processing Pipeline (Layer 2)
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Testing Layer 2: Storage & Media Processing Pipeline ---');
+  const processor = new ImageProcessorService();
+
+  // Create an 1800x1200 test photo buffer to test high-res downsampling derivatives
+  const testPhotoBuffer = await sharp({
+    create: { width: 1800, height: 1200, channels: 3, background: { r: 50, g: 120, b: 200 } },
+  })
+    .png()
+    .toBuffer();
+
+  const distinctPhotoBuffer = await sharp({
+    create: { width: 1800, height: 1200, channels: 3, background: { r: 200, g: 50, b: 50 } },
+  })
+    .png()
+    .toBuffer();
+
+  const derivatives = await processor.processImage(testPhotoBuffer);
+  assert(derivatives.originalMetadata.width === 1800, 'Original image width recognized as 1800px');
+  assert(derivatives.originalMetadata.height === 1200, 'Original image height recognized as 1200px');
+  assert(derivatives.originalMetadata.sizeBytes > 0, 'Original image size recorded');
+
+  // Verify Thumbnail derivative (WebP <= 400px)
+  const thumbMeta = await sharp(derivatives.thumbnailBuffer).metadata();
+  assert(thumbMeta.format === 'webp', 'Thumbnail derivative generated in modern WebP format');
+  assert((thumbMeta.width || 0) <= 400 && (thumbMeta.height || 0) <= 400, 'Thumbnail bounded to 400px boundary');
+
+  // Verify Web Display derivative (WebP <= 1600px)
+  const webMeta = await sharp(derivatives.webBuffer).metadata();
+  assert(webMeta.format === 'webp', 'Web Display derivative generated in WebP format');
+  assert((webMeta.width || 0) <= 1600 && (webMeta.height || 0) <= 1600, 'Web Display bounded to 1600px boundary');
+
+  // Verify AI Normal derivative (JPEG <= 1024px)
+  const aiMeta = await sharp(derivatives.aiNormalBuffer).metadata();
+  assert(aiMeta.format === 'jpeg', 'AI Normal derivative converted to standard JPEG format');
+  assert((aiMeta.width || 0) <= 1024 && (aiMeta.height || 0) <= 1024, 'AI Normal derivative bounded to 1024px boundary');
+
+  // Verify 64-bit dHash & Hamming distance
+  const dHash1 = derivatives.dHash;
+  const dHash2 = await processor.computeDHash(distinctPhotoBuffer);
+  assert(typeof dHash1 === 'string' && dHash1.length === 16, `dHash generates valid 64-bit hex hash (${dHash1})`);
+  assert(processor.calculateHammingDistance(dHash1, dHash1) === 0, 'Identical image has Hamming distance 0');
+  assert(processor.calculateHammingDistance(dHash1, dHash2) >= 0, 'Hamming distance calculates correctly on distinct images');
+
+  // Verify EXIF extraction service
+  assert(
+    exifService.hasValidHardwareMetadata({ cameraMake: 'Sony', cameraModel: 'ILCE-7M4', focalLength: 35 }),
+    'EXIF validator approves valid optical camera hardware'
+  );
+  assert(
+    !exifService.hasValidHardwareMetadata({}),
+    'EXIF validator rejects empty hardware metadata'
+  );
+  const parsedExif = await exifService.parseExif(testPhotoBuffer);
+  assert(typeof parsedExif === 'object', 'EXIF parser safely extracts metadata without exceptions');
+
+  // Verify Storage Service
+  const presignedUrl = await storage.getPresignedUploadUrl('test-presigned-photo.webp', 'image/webp');
+  assert(presignedUrl.includes('test-presigned-photo.webp'), 'Storage generates presigned upload URL with key');
+
+  const testPayload = Buffer.from('PIXEL_PRIZE_STORAGE_VERIFICATION_PAYLOAD');
+  const uploadedUrl = await storage.uploadBuffer('tests/probe.bin', testPayload, 'application/octet-stream');
+  assert(uploadedUrl.includes('tests/probe.bin'), 'Storage returns public URL for uploaded buffer');
+
+  const downloadedPayload = await storage.downloadBuffer('tests/probe.bin');
+  assert(downloadedPayload.equals(testPayload), 'Storage downloads exact matching buffer content');
+
+  await storage.deleteObject('tests/probe.bin');
+  assert(true, 'Storage cleanly deletes uploaded test buffer');
+
+  // ---------------------------------------------------------------------------
+  // Test 3: Forensics & Anti-Fraud Screening (Layer 3)
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Testing Layer 3: Forensics & Anti-Fraud Screening ---');
+  const forensics = new ForensicsService();
+
+  // Test synthetic EXIF detection
+  const syntheticResult = await forensics.inspectSubmission(
+    testPhotoBuffer,
+    { cameraModel: 'Midjourney v6 Neural Engine', software: 'ComfyUI' },
+    []
+  );
+  assert(!syntheticResult.isApproved, 'Correctly flags synthetic AI software in metadata (Midjourney/ComfyUI)');
+  assert(syntheticResult.disqualificationReason?.includes('DQ_SYNTHETIC_EXIF') === true, 'Assigned DQ_SYNTHETIC_EXIF code');
+
+  // Test duplicate burst collision
+  const duplicateResult = await forensics.inspectSubmission(
+    testPhotoBuffer,
+    { cameraModel: 'Sony A7 IV', software: 'Adobe Lightroom' },
+    [dHash1] // Collision with same hash
+  );
+  assert(!duplicateResult.isApproved, 'Correctly rejects duplicate burst upload with identical perceptual hash');
+  assert(duplicateResult.disqualificationReason?.includes('DQ_DUPLICATE_BURST') === true, 'Assigned DQ_DUPLICATE_BURST code');
+
+  // ---------------------------------------------------------------------------
+  // Test 4: AI Model Adapter Contract & Scoring Mathematics (Layer 4)
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Testing Layer 4: Model-Agnostic IJudgeAdapter & Scoring Mathematics ---');
+  const streetWeights = STANDARD_CATEGORIES.STREET.rubricWeights;
   assert(ScoringMath.validateWeights(streetWeights), 'Street weights sum to exactly 1.0 (100%)');
 
   const scores = {
@@ -85,76 +204,16 @@ async function runBackendVerification() {
     overallGestalt: 75,
   };
 
-  // Expected weighted:
-  // (0.15*90) + (0.10*80) + (0.05*70) + (0.05*60) + (0.30*95) + (0.20*85) + (0.15*90) + (0.00*75)
-  // = 13.5 + 8.0 + 3.5 + 3.0 + 28.5 + 17.0 + 13.5 + 0 = 87.0
-  // S_theme = 100, P_defect = 0 -> S_total = 87.0
   const computedScore = ScoringMath.calculateTotalScore(scores, streetWeights, 100, 0);
   assert(computedScore === 87.0, `Calculated S_total matches exact mathematical expectation (87.0 === ${computedScore})`);
 
-  // With 10 defect points and 90% theme factor:
-  // 87.0 * 0.9 - 10 = 78.3 - 10 = 68.3
   const penalizedScore = ScoringMath.calculateTotalScore(scores, streetWeights, 90, 10);
   assert(penalizedScore === 68.3, `Calculated S_total with defect penalties and theme attenuation matches (68.3 === ${penalizedScore})`);
 
-  // ---------------------------------------------------------------------------
-  // Test 2: Perceptual Hashing (dHash) & Hamming Distance
-  // ---------------------------------------------------------------------------
-  console.log('\n--- Testing Layer 2 & 3: Perceptual Hashing (dHash) ---');
-  const processor = new ImageProcessorService();
-
-  // Create two distinct test image buffers
-  const img1 = await sharp({
-    create: { width: 100, height: 100, channels: 3, background: { r: 255, g: 0, b: 0 } },
-  })
-    .png()
-    .toBuffer();
-
-  const img2 = await sharp({
-    create: { width: 100, height: 100, channels: 3, background: { r: 0, g: 255, b: 0 } },
-  })
-    .png()
-    .toBuffer();
-
-  const hash1 = await processor.computeDHash(img1);
-  const hash2 = await processor.computeDHash(img2);
-
-  assert(typeof hash1 === 'string' && hash1.length === 16, `dHash generates valid 64-bit hex hash (${hash1})`);
-  assert(processor.calculateHammingDistance(hash1, hash1) === 0, 'Identical image has Hamming distance 0');
-  assert(processor.calculateHammingDistance(hash1, hash2) >= 0, 'Hamming distance calculates correctly');
-
-  // ---------------------------------------------------------------------------
-  // Test 3: Forensics & Anti-Fraud Screening
-  // ---------------------------------------------------------------------------
-  console.log('\n--- Testing Layer 3: Forensics & Anti-Fraud Screening ---');
-  const forensics = new ForensicsService();
-
-  // Test synthetic EXIF detection
-  const syntheticResult = await forensics.inspectSubmission(
-    img1,
-    { cameraModel: 'Midjourney v6 Neural Engine', software: 'ComfyUI' },
-    []
-  );
-  assert(!syntheticResult.isApproved, 'Correctly flags synthetic AI software in metadata (Midjourney/ComfyUI)');
-  assert(syntheticResult.disqualificationReason?.includes('DQ_SYNTHETIC_EXIF') === true, 'Assigned DQ_SYNTHETIC_EXIF code');
-
-  // Test duplicate burst collision
-  const duplicateResult = await forensics.inspectSubmission(
-    img1,
-    { cameraModel: 'Sony A7 IV', software: 'Adobe Lightroom' },
-    [hash1] // Collision with same hash
-  );
-  assert(!duplicateResult.isApproved, 'Correctly rejects duplicate burst upload with identical perceptual hash');
-  assert(duplicateResult.disqualificationReason?.includes('DQ_DUPLICATE_BURST') === true, 'Assigned DQ_DUPLICATE_BURST code');
-
-  // ---------------------------------------------------------------------------
-  // Test 4: AI Model Adapter Contract (Mock Evaluation)
-  // ---------------------------------------------------------------------------
-  console.log('\n--- Testing Layer 4: Model-Agnostic IJudgeAdapter ---');
   const judge = new MockJudgeAdapter();
   const judgeResult = await judge.evaluate({
     submissionId: 'test_sub_001',
-    imageBuffer: img1,
+    imageBuffer: testPhotoBuffer,
     mimeType: 'image/png',
     imageUrl: 'http://localhost:3001/uploads/test.png',
     category: {
