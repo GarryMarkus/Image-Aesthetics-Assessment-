@@ -18,7 +18,8 @@ export class ImageProcessorService {
    * Process a raw image buffer into standardized derivatives and compute perceptual dHash
    */
   async processImage(buffer: Buffer): Promise<ProcessedDerivatives> {
-    const image = sharp(buffer);
+    const sharpOpts = { failOn: 'none' as const, limitInputPixels: 50_000_000 };
+    const image = sharp(buffer, sharpOpts);
     const metadata = await image.metadata();
 
     const width = metadata.width || 0;
@@ -27,7 +28,7 @@ export class ImageProcessorService {
     const sizeBytes = buffer.length;
 
     // 1. Generate 400px Thumbnail (WebP, quality 80)
-    const thumbnailBuffer = await sharp(buffer)
+    const thumbnailBuffer = await sharp(buffer, sharpOpts)
       .resize({
         width: width >= height ? 400 : undefined,
         height: height > width ? 400 : undefined,
@@ -38,7 +39,7 @@ export class ImageProcessorService {
       .toBuffer();
 
     // 2. Generate 1600px Web Display (WebP, quality 85, stripped of sensitive EXIF)
-    const webBuffer = await sharp(buffer)
+    const webBuffer = await sharp(buffer, sharpOpts)
       .resize({
         width: width >= height ? 1600 : undefined,
         height: height > width ? 1600 : undefined,
@@ -49,7 +50,7 @@ export class ImageProcessorService {
       .toBuffer();
 
     // 3. Generate 1024px AI Normal variant (JPEG, quality 90, sRGB)
-    const aiNormalBuffer = await sharp(buffer)
+    const aiNormalBuffer = await sharp(buffer, sharpOpts)
       .resize({
         width: width >= height ? 1024 : undefined,
         height: height > width ? 1024 : undefined,

@@ -24,7 +24,13 @@ export class AppealController {
       throw new BadRequestError("decision must be either 'APPROVE' or 'REJECT'");
     }
 
-    const result = await appealsService.resolveAppeal(id, reviewerId, decision, adminRemarks);
+    const result = await appealsService.resolveAppeal(
+      id,
+      reviewerId,
+      decision,
+      adminRemarks,
+      req.user!.role
+    );
     res.json(result);
   }
 }

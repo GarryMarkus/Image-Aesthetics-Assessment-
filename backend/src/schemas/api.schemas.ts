@@ -65,8 +65,13 @@ export const updateCompetitionStatusSchema = z.object({
 export const presignedUrlRequestSchema = z.object({
   competitionId: z.string().min(1, 'competitionId is required'),
   filename: z.string().min(1, 'filename is required'),
-  mimeType: z.string().min(1, 'mimeType is required'),
-  fileSizeBytes: z.number().positive('fileSizeBytes must be a positive number'),
+  mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp'], {
+    errorMap: () => ({ message: 'Invalid MIME type. Allowed formats: image/jpeg, image/png, image/webp' }),
+  }),
+  fileSizeBytes: z
+    .number()
+    .positive('fileSizeBytes must be a positive number')
+    .max(25 * 1024 * 1024, 'fileSizeBytes cannot exceed the 25 MB limit'),
 });
 
 export const confirmSubmissionSchema = z.object({

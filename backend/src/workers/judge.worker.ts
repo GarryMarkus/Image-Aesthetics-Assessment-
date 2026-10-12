@@ -26,11 +26,23 @@ export async function processJudgingJob(data: JudgeJobData): Promise<{ status: s
     include: {
       category: true,
       exifMetadata: true,
+      aestheticScore: true,
     },
   });
 
   if (!submission) {
     throw new Error(`Submission ${submissionId} not found`);
+  }
+
+  // Idempotency: avoid redundant API calls and re-scoring if already evaluated
+  if (submission.status === SubmissionStatus.SCORED && submission.aestheticScore) {
+    logger.info(
+      `[JudgeWorker] Submission ${submissionId} has already been scored (${submission.aestheticScore.overallScore}). Idempotently skipping evaluation.`
+    );
+    return {
+      status: 'SCORED',
+      overallScore: submission.aestheticScore.overallScore,
+    };
   }
 
   // 1. Fetch 1024px AI Normal variant
@@ -144,19 +156,11 @@ export function createJudgeWorker(): Worker<JudgeJobData> {
   );
 
   worker.on('failed', async (job, err) => {
-    logger.error(`[JudgeWorker] Job ${job?.id} failed:`, err);
+    logger.error(`[JudgeWorker] Job ${job?.id} failed (attempt ${job?.attemptsMade}/${job?.opts.attempts || 3}):`, err);
     if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
-      try {
-        await prisma.submission.update({
-          where: { id: job.data.submissionId },
-          data: {
-            status: SubmissionStatus.FLAGGED_DISQUALIFIED,
-            disqualificationReason: `SYSTEM_ERROR_JUDGE_FAILED: AI evaluation failed after ${job.attemptsMade} attempts (${err.message})`,
-          },
-        });
-      } catch (dbErr) {
-        logger.error('[JudgeWorker] Failed to record dead-letter failure in database', dbErr);
-      }
+      logger.error(
+        `[JudgeWorker] Job ${job.id} for submission ${job.data.submissionId} reached maximum retry limit. Preserving submission state for operator re-triage.`
+      );
     }
   });
 

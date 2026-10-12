@@ -37,7 +37,7 @@ export class ShortlistService {
           status: SubmissionStatus.SCORED,
           totalScore: { not: null },
         },
-        orderBy: { totalScore: 'desc' },
+        orderBy: [{ totalScore: 'desc' }, { createdAt: 'asc' }],
         take: 10,
       });
 

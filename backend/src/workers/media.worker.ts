@@ -172,19 +172,11 @@ export function createMediaWorker(): Worker<IngestJobData> {
   );
 
   worker.on('failed', async (job, err) => {
-    logger.error(`[MediaWorker] Job ${job?.id} failed:`, err);
+    logger.error(`[MediaWorker] Job ${job?.id} failed (attempt ${job?.attemptsMade}/${job?.opts.attempts || 3}):`, err);
     if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
-      try {
-        await prisma.submission.update({
-          where: { id: job.data.submissionId },
-          data: {
-            status: SubmissionStatus.FLAGGED_DISQUALIFIED,
-            disqualificationReason: `SYSTEM_ERROR_INGEST_FAILED: Ingestion failed after ${job.attemptsMade} attempts (${err.message})`,
-          },
-        });
-      } catch (dbErr) {
-        logger.error('[MediaWorker] Failed to record dead-letter failure in database', dbErr);
-      }
+      logger.error(
+        `[MediaWorker] Job ${job.id} for submission ${job.data.submissionId} reached maximum retry limit. Retaining submission in IN_QUEUE for operator re-triage.`
+      );
     }
   });
 

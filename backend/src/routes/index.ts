@@ -18,6 +18,26 @@ import {
   resolveAppealSchema,
 } from '../schemas/api.schemas.js';
 import { Role } from '../types/index.js';
+import { rateLimit } from '../middleware/rate-limit.middleware.js';
+
+// Rate Limiting Instances
+const authRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 15,
+  message: 'Too many authentication attempts. Please try again in 1 minute.',
+});
+
+const uploadRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30,
+  message: 'Upload ticket quota reached. Please wait before requesting additional upload tickets.',
+});
+
+const voteRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,
+  message: 'Voting rate limit exceeded. Please slow down.',
+});
 
 export const apiRouter = Router();
 
@@ -36,10 +56,10 @@ apiRouter.get('/health', (_req, res) => {
 // 1. Auth Endpoints
 // -----------------------------------------------------------------------------
 const authRouter = Router();
-authRouter.post('/register', validateBody(registerSchema), (req, res, next) =>
+authRouter.post('/register', authRateLimiter, validateBody(registerSchema), (req, res, next) =>
   authController.register(req, res).catch(next)
 );
-authRouter.post('/login', validateBody(loginSchema), (req, res, next) =>
+authRouter.post('/login', authRateLimiter, validateBody(loginSchema), (req, res, next) =>
   authController.login(req, res).catch(next)
 );
 authRouter.get('/me', authenticate, (req, res, next) =>
@@ -85,6 +105,7 @@ apiRouter.use('/competitions', compRouter);
 const subRouter = Router();
 subRouter.post(
   '/presigned-url',
+  uploadRateLimiter,
   authenticate,
   validateBody(presignedUrlRequestSchema),
   (req, res, next) => submissionController.requestPresignedUrl(req, res).catch(next)
@@ -105,6 +126,7 @@ subRouter.get(
 );
 subRouter.post(
   '/:id/vote',
+  voteRateLimiter,
   authenticate,
   (req, res, next) => submissionController.vote(req, res).catch(next)
 );

@@ -163,13 +163,37 @@ export class JurorService {
       throw new ForbiddenError('Only the competition organizer can publish official results');
     }
 
-    // Update status to RESULTS_PUBLISHED
-    const updated = await prisma.competition.update({
-      where: { id: competitionId },
-      data: { status: CompetitionStatus.RESULTS_PUBLISHED },
+    // Identify top podium winners (1st, 2nd, 3rd) to increment lifetimeWins
+    const winningVerdicts = await prisma.jurorVerdict.findMany({
+      where: {
+        competitionId,
+        podiumRank: {
+          in: [PodiumRank.FIRST_PLACE, PodiumRank.SECOND_PLACE, PodiumRank.THIRD_PLACE],
+        },
+      },
+      include: {
+        submission: { select: { userId: true } },
+      },
     });
 
-    logger.info(`[JurorService] Competition ${competitionId} results officially published to the public.`);
+    const winnerUserIds = Array.from(new Set(winningVerdicts.map((v) => v.submission.userId)));
+
+    const [updated] = await prisma.$transaction([
+      prisma.competition.update({
+        where: { id: competitionId },
+        data: { status: CompetitionStatus.RESULTS_PUBLISHED },
+      }),
+      ...winnerUserIds.map((userId) =>
+        prisma.user.update({
+          where: { id: userId },
+          data: { lifetimeWins: { increment: 1 } },
+        })
+      ),
+    ]);
+
+    logger.info(
+      `[JurorService] Competition ${competitionId} results officially published to the public. Incremented lifetime wins for ${winnerUserIds.length} podium winners.`
+    );
     return updated;
   }
 }

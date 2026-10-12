@@ -104,25 +104,39 @@ class LocalStorageService implements StorageService {
     );
   }
 
+  private resolveSafePath(key: string): string {
+    // Sanitize and ensure key cannot traverse outside upload directory
+    const cleanKey = key.replace(/\\/g, '/').replace(/^\/+/, '');
+    if (cleanKey.includes('..')) {
+      throw new Error(`Security violation: Invalid storage key containing directory traversal: ${key}`);
+    }
+    const resolvedPath = path.resolve(this.uploadDir, cleanKey);
+    if (!resolvedPath.startsWith(this.uploadDir)) {
+      throw new Error(`Security violation: Storage key resolves outside uploads root: ${key}`);
+    }
+    return resolvedPath;
+  }
+
   async getPresignedUploadUrl(key: string, _mimeType: string): Promise<string> {
+    this.resolveSafePath(key);
     // For local dev, direct endpoint on the server
     return `${env.FRONTEND_ORIGIN}/api/mock-upload?key=${encodeURIComponent(key)}`;
   }
 
   async uploadBuffer(key: string, buffer: Buffer, _mimeType = 'application/octet-stream'): Promise<string> {
-    const filePath = path.join(this.uploadDir, key);
+    const filePath = this.resolveSafePath(key);
     await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, buffer);
     return this.getPublicUrl(key);
   }
 
   async downloadBuffer(key: string): Promise<Buffer> {
-    const filePath = path.join(this.uploadDir, key);
+    const filePath = this.resolveSafePath(key);
     return fs.readFile(filePath);
   }
 
   async deleteObject(key: string): Promise<void> {
-    const filePath = path.join(this.uploadDir, key);
+    const filePath = this.resolveSafePath(key);
     try {
       await fs.unlink(filePath);
     } catch {
@@ -131,7 +145,8 @@ class LocalStorageService implements StorageService {
   }
 
   getPublicUrl(key: string): string {
-    return `${this.publicBaseUrl.replace(/\/$/, '')}/${key.replace(/^\//, '')}`;
+    const cleanKey = key.replace(/\\/g, '/').replace(/^\/+/, '');
+    return `${this.publicBaseUrl.replace(/\/$/, '')}/${cleanKey}`;
   }
 }
 

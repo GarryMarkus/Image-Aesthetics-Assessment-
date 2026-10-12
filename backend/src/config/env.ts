@@ -34,7 +34,24 @@ const envSchema = z.object({
   GEMINI_MODEL_NAME: z.string().default('gemini-2.5-flash'),
   CUSTOM_MODEL_ENDPOINT: z.string().optional(),
   CUSTOM_MODEL_SECRET: z.string().optional(),
-});
+}).refine(
+  (data) => {
+    if (data.NODE_ENV === 'production') {
+      if (
+        !data.AUTH_SECRET ||
+        data.AUTH_SECRET === 'default_pixel_prize_jwt_secret_key_32chars' ||
+        data.AUTH_SECRET.length < 32
+      ) {
+        return false;
+      }
+    }
+    return true;
+  },
+  {
+    message: 'AUTH_SECRET must be set to a strong, non-default secret of at least 32 characters in production',
+    path: ['AUTH_SECRET'],
+  }
+);
 
 const parsed = envSchema.safeParse(process.env);
 

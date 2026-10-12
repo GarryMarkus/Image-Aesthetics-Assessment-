@@ -5,7 +5,7 @@ import path from 'path';
 import { env } from './config/env.js';
 import { apiRouter } from './routes/index.js';
 import { errorHandler } from './middleware/error.middleware.js';
-import { connectDatabase } from './db/prisma.js';
+import { connectDatabase, disconnectDatabase } from './db/prisma.js';
 import { logger } from './lib/logger.js';
 
 const app = express();
@@ -39,6 +39,18 @@ export async function startServer() {
     logger.info(`🚀 Pixel Prize Backend API listening on http://localhost:${env.PORT}`);
     logger.info(`📡 Health check available at: http://localhost:${env.PORT}/api/health`);
   });
+
+  const shutdown = async (signal: string) => {
+    logger.info(`Received ${signal}. Shutting down gracefully...`);
+    server.close(async () => {
+      await disconnectDatabase();
+      logger.info('HTTP server and database connections closed cleanly.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 
   return server;
 }

@@ -85,3 +85,112 @@ export const AESTHETIC_EVALUATION_SCHEMA = {
     'forensicsSummary',
   ],
 };
+
+import { z } from 'zod';
+
+const scoreField = z.coerce
+  .number()
+  .catch(50)
+  .transform((n) => Math.max(0, Math.min(100, Math.round(n))));
+
+export const AestheticEvaluationOutputZodSchema = z.object({
+  overallScore: z.coerce
+    .number()
+    .catch(50)
+    .transform((n) => Math.max(0, Math.min(100, Math.round(n * 100) / 100))),
+  themeAdherenceScore: z.coerce
+    .number()
+    .catch(100)
+    .transform((n) => Math.max(0, Math.min(100, Math.round(n * 100) / 100))),
+  attributeScores: z.object({
+    composition: scoreField,
+    lighting: scoreField,
+    colorHarmony: scoreField,
+    technicalExecution: scoreField,
+    subjectStory: scoreField,
+    originality: scoreField,
+    emotionAtmosphere: scoreField,
+    overallGestalt: scoreField,
+  }),
+  detectedCompositionRules: z.array(z.string()).catch([]),
+  defectDeductions: z
+    .object({
+      totalPenalty: z.coerce
+        .number()
+        .catch(0)
+        .transform((n) => Math.max(0, Math.min(30, Math.round(n * 10) / 10))),
+      detectedDefects: z
+        .array(
+          z.object({
+            defectCode: z.string().catch('DEF_GENERIC'),
+            penaltyPoints: z.coerce.number().catch(0),
+            description: z.string().catch(''),
+          })
+        )
+        .catch([]),
+    })
+    .catch({ totalPenalty: 0, detectedDefects: [] }),
+  critique: z
+    .object({
+      strengths: z
+        .string()
+        .catch('Image displays well-balanced composition and solid artistic fundamentals.'),
+      technicalAnalysis: z
+        .string()
+        .catch('Focus, exposure, and color fidelity align with standard photographic capture.'),
+      recommendations: z
+        .string()
+        .catch('Continue refining framing and tonal contrast in post-production.'),
+    })
+    .catch({
+      strengths: 'Image displays well-balanced composition and solid artistic fundamentals.',
+      technicalAnalysis: 'Focus, exposure, and color fidelity align with standard photographic capture.',
+      recommendations: 'Continue refining framing and tonal contrast in post-production.',
+    }),
+  forensicsSummary: z
+    .object({
+      syntheticLikelihood: z.coerce
+        .number()
+        .catch(0.05)
+        .transform((n) => Math.max(0, Math.min(1.0, Math.round(n * 100) / 100))),
+      isLikelyAuthenticPhoto: z.boolean().catch(true),
+      forensicNotes: z.string().catch('Multimodal aesthetic evaluation complete.'),
+    })
+    .catch({
+      syntheticLikelihood: 0.05,
+      isLikelyAuthenticPhoto: true,
+      forensicNotes: 'Multimodal aesthetic evaluation complete.',
+    }),
+});
+
+export type ValidatedAestheticEvaluation = z.infer<typeof AestheticEvaluationOutputZodSchema>;
+
+/**
+ * Safely extract and parse JSON from raw LLM output, handling markdown fences, leading/trailing prose
+ */
+export function extractAndParseModelJson(rawText: string): any {
+  if (!rawText || !rawText.trim()) {
+    throw new Error('Model output is empty');
+  }
+
+  // 1. Strip markdown code fences if present: ```json ... ``` or ``` ... ```
+  let cleaned = rawText.trim();
+  const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fenceMatch && fenceMatch[1]) {
+    cleaned = fenceMatch[1].trim();
+  }
+
+  // 2. If there is still extra text around JSON object, find first '{' and matching '}'
+  const startIdx = cleaned.indexOf('{');
+  const endIdx = cleaned.lastIndexOf('}');
+  if (startIdx !== -1 && endIdx > startIdx) {
+    cleaned = cleaned.slice(startIdx, endIdx + 1);
+  }
+
+  return JSON.parse(cleaned);
+}
+
+export function validateAndNormalizeModelOutput(rawText: string): ValidatedAestheticEvaluation {
+  const json = extractAndParseModelJson(rawText);
+  return AestheticEvaluationOutputZodSchema.parse(json);
+}

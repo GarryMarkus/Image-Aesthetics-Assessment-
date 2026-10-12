@@ -1,6 +1,6 @@
 import { prisma } from '../db/prisma.js';
 import { mediaQueue } from '../lib/queue.js';
-import { AppealStatus, SubmissionStatus } from '../types/index.js';
+import { AppealStatus, SubmissionStatus, Role } from '../types/index.js';
 import { NotFoundError, BadRequestError, ForbiddenError } from '../lib/errors.js';
 
 export class AppealsService {
@@ -48,17 +48,30 @@ export class AppealsService {
 
   async resolveAppeal(
     appealId: string,
-    _reviewerId: string,
+    reviewerId: string,
     decision: 'APPROVE' | 'REJECT',
-    adminRemarks?: string
+    adminRemarks?: string,
+    reviewerRole?: Role
   ) {
     const appeal = await prisma.appealTicket.findUnique({
       where: { id: appealId },
-      include: { submission: { include: { imageResource: true } } },
+      include: {
+        submission: {
+          include: {
+            imageResource: true,
+            competition: true,
+          },
+        },
+      },
     });
 
     if (!appeal) {
       throw new NotFoundError('AppealTicket', appealId);
+    }
+
+    // Enforce ownership: only the contest's organizer or an ADMIN can resolve appeals
+    if (reviewerRole !== Role.ADMIN && appeal.submission.competition.organizerId !== reviewerId) {
+      throw new ForbiddenError('Only the organizer of this competition or an administrator can resolve appeals');
     }
 
     if (decision === 'REJECT') {
@@ -89,9 +102,11 @@ export class AppealsService {
       }),
     ]);
 
-    // Re-queue media ingestion
+    // Re-queue media ingestion with robust storage key extraction
     if (appeal.submission.imageResource?.originalUrl) {
-      const storageKey = appeal.submission.imageResource.originalUrl.split('/uploads/').pop() || '';
+      const originalUrl = appeal.submission.imageResource.originalUrl;
+      const match = originalUrl.match(/raw-uploads\/[^?#]+/);
+      const storageKey = match ? match[0] : `raw-uploads/${appeal.submissionId}.jpg`;
       await mediaQueue.add('INGEST_MEDIA', {
         submissionId: appeal.submissionId,
         storageKey,

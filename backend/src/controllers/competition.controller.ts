@@ -3,8 +3,8 @@ import { competitionService } from '../services/competition.service.js';
 import { shortlistService } from '../services/shortlist.service.js';
 import { leaderboardService } from '../services/leaderboard.service.js';
 import { prisma } from '../db/prisma.js';
-import { CompetitionStatus, SubmissionStatus } from '../types/index.js';
-import { BadRequestError, NotFoundError } from '../lib/errors.js';
+import { CompetitionStatus, SubmissionStatus, Role } from '../types/index.js';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../lib/errors.js';
 
 export class CompetitionController {
   async list(req: Request, res: Response) {
@@ -50,6 +50,12 @@ export class CompetitionController {
     }
 
     const previous = await competitionService.getCompetitionById(id);
+
+    // Enforce ownership: only the contest creator or an ADMIN can alter lifecycle states
+    if (previous.organizerId !== req.user?.id && req.user?.role !== Role.ADMIN) {
+      throw new ForbiddenError('Only the designated competition organizer or an administrator can update competition status');
+    }
+
     const updated = await competitionService.transitionState(id, status as CompetitionStatus);
 
     // If moving to SHORTLISTED, automatically generate shortlist

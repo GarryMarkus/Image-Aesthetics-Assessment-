@@ -42,7 +42,7 @@ export class LeaderboardService {
     // 1. Official AI & Juror Aesthetic Track
     const aiEntries = await prisma.submission.findMany({
       where: whereAi,
-      orderBy: { totalScore: 'desc' },
+      orderBy: [{ totalScore: 'desc' }, { createdAt: 'asc' }],
       take: limit,
       include: {
         category: true,
@@ -66,7 +66,7 @@ export class LeaderboardService {
 
     const communityEntries = await prisma.submission.findMany({
       where: whereCommunity,
-      orderBy: { communityVotesCount: 'desc' },
+      orderBy: [{ communityVotesCount: 'desc' }, { createdAt: 'asc' }],
       take: limit,
       include: {
         category: true,

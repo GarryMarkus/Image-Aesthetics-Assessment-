@@ -57,6 +57,11 @@ export class SubmissionService {
    * Request direct-to-cloud presigned upload ticket after quota validation
    */
   async requestPresignedUploadUrl(input: PresignedUrlRequest) {
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedMimeTypes.includes(input.mimeType)) {
+      throw new BadRequestError('Invalid MIME type. Allowed formats: image/jpeg, image/png, image/webp');
+    }
+
     const competition = await prisma.competition.findUnique({
       where: { id: input.competitionId },
       include: {
@@ -81,6 +86,11 @@ export class SubmissionService {
       throw new BadRequestError(`Competition is currently in '${competition.status}' status and not accepting submissions`);
     }
 
+    const now = new Date();
+    if (now < competition.submissionStartDate || now > competition.submissionEndDate) {
+      throw new BadRequestError('Competition submission period is not currently active');
+    }
+
     // Verify quota
     const currentSubmissionsCount = competition._count.submissions;
     if (currentSubmissionsCount >= competition.maxEntriesPerUser) {
@@ -92,17 +102,19 @@ export class SubmissionService {
     // File validation
     SubmissionService.validateFileSize(input.fileSizeBytes);
 
-    const ext = input.filename.split('.').pop() || 'jpg';
+    const ext = input.filename.split('.').pop()?.toLowerCase() || 'jpg';
     const submissionId = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const storageKey = `raw-uploads/${submissionId}.${ext}`;
 
     const uploadUrl = await storage.getPresignedUploadUrl(storageKey, input.mimeType, 900);
+    const expiresAt = new Date(Date.now() + 900 * 1000).toISOString();
 
     return {
       submissionId,
       uploadUrl,
       storageKey,
       expiresInSeconds: 900,
+      expiresAt,
     };
   }
 
@@ -110,7 +122,56 @@ export class SubmissionService {
    * Confirm photo upload and enqueue background media ingestion
    */
   async confirmSubmission(input: ConfirmSubmissionInput, storageKey: string) {
-    // 1. Create DB Submission Record
+    // 1. Validate storage key format and prevent traversal
+    if (
+      !storageKey.startsWith('raw-uploads/') ||
+      storageKey.includes('..') ||
+      !storageKey.includes(input.submissionId)
+    ) {
+      throw new BadRequestError('Invalid storageKey: Must match expected raw upload path for this submission');
+    }
+
+    // 2. Verify Competition existence, status, and active dates
+    const competition = await prisma.competition.findUnique({
+      where: { id: input.competitionId },
+      include: { categories: true },
+    });
+
+    if (!competition) {
+      throw new NotFoundError('Competition', input.competitionId);
+    }
+
+    if (competition.status !== CompetitionStatus.OPEN) {
+      throw new BadRequestError(`Cannot submit: Competition is currently in '${competition.status}' status`);
+    }
+
+    const now = new Date();
+    if (now < competition.submissionStartDate || now > competition.submissionEndDate) {
+      throw new BadRequestError('Cannot submit: Competition submission period is not currently active');
+    }
+
+    // 3. Verify category belongs to this competition
+    const categoryExists = competition.categories.some((c) => c.id === input.categoryId);
+    if (!categoryExists) {
+      throw new BadRequestError('Specified category does not belong to this competition');
+    }
+
+    // 4. Verify user submission quota
+    const existingCount = await prisma.submission.count({
+      where: {
+        competitionId: input.competitionId,
+        userId: input.userId,
+        status: { not: SubmissionStatus.WITHDRAWN },
+      },
+    });
+
+    if (existingCount >= competition.maxEntriesPerUser) {
+      throw new QuotaExceededError(
+        `User has already reached the maximum submission limit (${competition.maxEntriesPerUser}) for this competition`
+      );
+    }
+
+    // 5. Create DB Submission Record
     const submission = await prisma.submission.create({
       data: {
         id: input.submissionId,
@@ -124,7 +185,7 @@ export class SubmissionService {
       },
     });
 
-    // 2. Dispatch to Media Ingestion Queue
+    // 6. Dispatch to Media Ingestion Queue
     await mediaQueue.add('INGEST_MEDIA', {
       submissionId: input.submissionId,
       storageKey,
@@ -134,6 +195,7 @@ export class SubmissionService {
       submissionId: submission.id,
       status: submission.status,
       message: 'Submission confirmed. Media processing and AI evaluation in progress.',
+      queuePosition: 1,
     };
   }
 
@@ -179,18 +241,20 @@ export class SubmissionService {
       throw new BadRequestError('Scorecard is private until competition results are officially published');
     }
 
-    // Calculate percentile in category
+    // Calculate percentile in category (includes both SCORED and SHORTLISTED entries)
+    const scoredStatuses = [SubmissionStatus.SCORED, SubmissionStatus.SHORTLISTED];
+
     const totalInCategory = await prisma.submission.count({
       where: {
         categoryId: submission.categoryId,
-        status: SubmissionStatus.SCORED,
+        status: { in: scoredStatuses },
       },
     });
 
     const lowerScoredCount = await prisma.submission.count({
       where: {
         categoryId: submission.categoryId,
-        status: SubmissionStatus.SCORED,
+        status: { in: scoredStatuses },
         totalScore: { lt: submission.totalScore ?? 0 },
       },
     });
