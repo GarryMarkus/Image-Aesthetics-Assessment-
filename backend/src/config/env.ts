@@ -31,7 +31,7 @@ const envSchema = z.object({
   // AI Judging
   JUDGE_PROVIDER: z.enum(['gemini', 'custom_model', 'mock']).default('mock'),
   GEMINI_API_KEY: z.string().optional(),
-  GEMINI_MODEL_NAME: z.string().default('gemini-2.5-flash'),
+  GEMINI_MODEL_NAME: z.string().default('gemini-3.5-flash'),
   CUSTOM_MODEL_ENDPOINT: z.string().optional(),
   CUSTOM_MODEL_SECRET: z.string().optional(),
 }).refine(

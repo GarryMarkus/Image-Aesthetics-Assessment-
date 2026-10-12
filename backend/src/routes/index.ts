@@ -4,6 +4,7 @@ import { competitionController } from '../controllers/competition.controller.js'
 import { submissionController } from '../controllers/submission.controller.js';
 import { jurorController } from '../controllers/juror.controller.js';
 import { appealController } from '../controllers/appeal.controller.js';
+import { judgeController } from '../controllers/judge.controller.js';
 import { authenticate, optionalAuthenticate, requireRole } from '../middleware/auth.middleware.js';
 import { validateBody } from '../middleware/validate.middleware.js';
 import {
@@ -183,3 +184,13 @@ appealRouter.patch(
   (req, res, next) => appealController.resolveAppeal(req, res).catch(next)
 );
 apiRouter.use('/appeals', appealRouter);
+
+// -----------------------------------------------------------------------------
+// 6. AI Judging Sandbox & Testing Studio Endpoints
+// -----------------------------------------------------------------------------
+const judgeRouter = Router();
+judgeRouter.post('/sandbox', optionalAuthenticate, (req, res, next) =>
+  judgeController.evaluateSandbox(req, res).catch(next)
+);
+apiRouter.use('/judge', judgeRouter);
+

@@ -14,6 +14,7 @@ export function Header() {
   const navLinks = [
     { label: "[THE HALL]", href: "/", icon: Layers },
     { label: "[COMPETITIONS]", href: "/competitions", icon: Compass },
+    { label: "[AI LAB]", href: "/sandbox", icon: Sparkles },
     { label: "[LEADERBOARD]", href: "/leaderboard", icon: Trophy },
     { label: "[JUROR LIGHTBOX]", href: "/juror", icon: Eye },
   ];

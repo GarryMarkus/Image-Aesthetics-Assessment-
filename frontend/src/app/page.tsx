@@ -8,6 +8,7 @@ import {
   Layers,
   Sparkles,
   Terminal,
+  Zap,
 } from "lucide-react";
 import {
   BracketButton,
@@ -88,10 +89,18 @@ export default function HomePage() {
           <BracketButton
             variant="secondary"
             bracketStyle="bracket"
+            href="/sandbox"
+            leftIcon={<Zap className="w-4 h-4 text-primary-container" />}
+          >
+            AI LAB // TEST SCORING
+          </BracketButton>
+          <BracketButton
+            variant="secondary"
+            bracketStyle="bracket"
             href="/leaderboard"
             rightIcon={<ArrowUpRight className="w-4 h-4" />}
           >
-            VIEW LEADERBOARD
+            LEADERBOARD
           </BracketButton>
         </div>
       </div>

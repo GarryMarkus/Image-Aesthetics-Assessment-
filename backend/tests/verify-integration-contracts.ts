@@ -224,8 +224,43 @@ async function runIntegrationVerification() {
     assert(Boolean(leadData.communityTrack), 'communityTrack present in leaderboard response');
     console.log('  ✅ PASS: Dual-track leaderboard contracts match frontend specifications');
 
+    // -------------------------------------------------------------------------
+    // 9. AI Lab Scoring Sandbox Endpoint Contract
+    // -------------------------------------------------------------------------
+    console.log('\n--- 9. AI Lab Scoring Sandbox Endpoint Contract ---');
+    const sandboxBuf = await sharp({
+      create: { width: 400, height: 300, channels: 3, background: { r: 50, g: 120, b: 200 } },
+    }).jpeg().toBuffer();
+    const sandboxBase64 = `data:image/jpeg;base64,${sandboxBuf.toString('base64')}`;
+
+    const sandboxRes = await fetch(`${baseUrl}/api/judge/sandbox`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        images: [
+          {
+            id: 'sandbox_test_01',
+            name: 'Sunset over Archipelago',
+            dataUrl: sandboxBase64,
+            categoryCode: 'LANDSCAPE',
+          },
+        ],
+      }),
+    });
+    assert.strictEqual(sandboxRes.status, 200, 'Sandbox evaluation returns HTTP 200');
+    const sandboxData = await sandboxRes.json();
+    assert.strictEqual(sandboxData.success, true, 'Sandbox success flag is true');
+    assert.strictEqual(sandboxData.count, 1, 'Evaluated count is 1');
+    const evalItem = sandboxData.results[0];
+    assert(typeof evalItem.overallScore === 'number', 'overallScore is a number');
+    assert(typeof evalItem.themeAdherenceScore === 'number', 'themeAdherenceScore is a number');
+    assert(Boolean(evalItem.attributeScores.composition), 'composition score exists');
+    assert(Boolean(evalItem.critique.strengths), 'critique strengths exists');
+    assert(Boolean(evalItem.forensicsSummary.isLikelyAuthenticPhoto), 'forensic status exists');
+    console.log(`  ✅ PASS: Sandbox evaluation completed (Score: ${evalItem.overallScore}, Latency: ${evalItem.latencyMs}ms)`);
+
     console.log('\n=======================================================');
-    console.log('🎯 ALL 8 FULLSTACK INTEGRATION CONTRACTS VERIFIED (100% PASS)');
+    console.log('🎯 ALL 9 FULLSTACK INTEGRATION CONTRACTS VERIFIED (100% PASS)');
     console.log('=======================================================');
   } finally {
     server.close();

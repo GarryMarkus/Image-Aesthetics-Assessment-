@@ -7,6 +7,8 @@ import {
   PresignedUrlResponse,
   User,
   UserRole,
+  SandboxImageItem,
+  SandboxEvaluationResult,
 } from "@/types";
 import {
   mockCompetitions,
@@ -886,6 +888,83 @@ export const apiClient = {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || err.message || `Failed to resolve appeal: ${res.statusText}`);
+    }
+
+    return res.json();
+  },
+
+  // ---------------------------------------------------------------------------
+  // AI Lab / Sandbox Evaluation
+  // ---------------------------------------------------------------------------
+  async evaluateSandbox(
+    images: SandboxImageItem[]
+  ): Promise<{
+    count: number;
+    results: SandboxEvaluationResult[];
+    evaluatedAt: string;
+  }> {
+    if (IS_MOCK_MODE) {
+      await delay(1200);
+      const mockResults: SandboxEvaluationResult[] = images.map((img, idx) => {
+        const baseScore = 78 + ((idx * 5 + 7) % 18);
+        return {
+          id: img.id,
+          name: img.name,
+          categoryCode: img.categoryCode || "GENERAL",
+          categoryName: img.categoryCode || "General Photography",
+          width: 1920,
+          height: 1080,
+          fileSizeBytes: 2450000,
+          overallScore: baseScore,
+          themeAdherenceScore: Math.min(100, baseScore + 4),
+          attributeScores: {
+            composition: Math.min(98, baseScore + 2),
+            lighting: Math.min(98, baseScore - 1),
+            colorHarmony: Math.min(98, baseScore + 3),
+            technicalExecution: Math.min(98, baseScore),
+            subjectStory: Math.min(98, baseScore + 1),
+            originality: Math.min(98, baseScore - 2),
+            emotionAtmosphere: Math.min(98, baseScore + 4),
+            overallGestalt: baseScore,
+          },
+          detectedCompositionRules: ["Rule of Thirds", "Golden Ratio", "Diagonal Flow"],
+          defectDeductions: {
+            totalPenalty: 0,
+            detectedDefects: [],
+          },
+          critique: {
+            strengths: "Remarkable tonal range and compelling dynamic composition. The optical focus plane creates a distinct sense of depth that draws immediate visual resonance.",
+            technicalAnalysis: "Sensor exposure is calibrated cleanly. High-frequency texture details remain intact throughout midtones with minimal luminance noise artifacts.",
+            recommendations: "Experiment with slightly tighter crop framing or micro-contrast adjustment to accentuate the primary geometric anchor points.",
+          },
+          forensicsSummary: {
+            syntheticLikelihood: 0.03,
+            isLikelyAuthenticPhoto: true,
+            forensicNotes: "Sensor PRNU optical profile confirmed authentic capture.",
+          },
+          percentileRank: baseScore > 88 ? "Top 3% in Genre" : "Top 12% in Genre",
+          latencyMs: 980,
+          modelProvider: "gemini",
+          modelVersion: "gemini-2.5-flash",
+        };
+      });
+
+      return {
+        count: mockResults.length,
+        results: mockResults,
+        evaluatedAt: new Date().toISOString(),
+      };
+    }
+
+    const res = await fetch(`${API_BASE_URL}/api/judge/sandbox`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ images }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || err.message || `Sandbox evaluation failed (${res.status})`);
     }
 
     return res.json();

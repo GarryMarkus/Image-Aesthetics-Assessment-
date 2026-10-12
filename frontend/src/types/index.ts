@@ -196,3 +196,59 @@ export interface PresignedUrlResponse {
   publicUrl: string;
   expiresInSeconds: number;
 }
+
+export interface SandboxImageItem {
+  id: string;
+  name: string;
+  dataUrl: string;
+  categoryCode?: string;
+  cameraMake?: string;
+  cameraModel?: string;
+  lensModel?: string;
+  story?: string;
+}
+
+export interface SandboxEvaluationResult {
+  id: string;
+  name: string;
+  categoryCode: string;
+  categoryName: string;
+  width: number;
+  height: number;
+  fileSizeBytes: number;
+  overallScore: number;
+  themeAdherenceScore: number;
+  attributeScores: {
+    composition: number;
+    lighting: number;
+    colorHarmony: number;
+    technicalExecution: number;
+    subjectStory: number;
+    originality: number;
+    emotionAtmosphere: number;
+    overallGestalt: number;
+  };
+  detectedCompositionRules: string[];
+  defectDeductions: {
+    totalPenalty: number;
+    detectedDefects: Array<{
+      defectCode: string;
+      penaltyPoints: number;
+      description: string;
+    }>;
+  };
+  critique: {
+    strengths: string;
+    technicalAnalysis: string;
+    recommendations: string;
+  };
+  forensicsSummary: {
+    syntheticLikelihood: number;
+    isLikelyAuthenticPhoto: boolean;
+    forensicNotes: string;
+  };
+  percentileRank: string;
+  latencyMs: number;
+  modelProvider: string;
+  modelVersion: string;
+}

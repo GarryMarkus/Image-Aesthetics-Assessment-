@@ -20,8 +20,8 @@ app.use(
 );
 
 // Body parsers
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static local uploads folder for testing/dev
 app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
