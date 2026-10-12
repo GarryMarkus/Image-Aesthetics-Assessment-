@@ -3,3 +3,6 @@ photography competition websites for refrence-
 https://gurushots.com/
 https://www.photocrowd.com/photo-competitions/
 
+https://aftershoot.com/
+-review and rating feature
+-any other usefull feature according to project
