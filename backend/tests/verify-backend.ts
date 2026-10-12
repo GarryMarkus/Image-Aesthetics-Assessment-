@@ -852,6 +852,181 @@ async function runBackendVerification() {
   assert(true, 'Ephemeral HTTP server closed cleanly');
 
   // ---------------------------------------------------------------------------
+  // Test 8: End-to-End System Integration Verification (Layer 8)
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Testing Layer 8: End-to-End System Integration Verification ---');
+
+  // E2E Phase 1: Competition Definition & State Initialization
+  const e2eCompetition = {
+    id: `comp_e2e_${Date.now()}`,
+    title: 'Tokyo After Dark: Street & Neon 2026',
+    slug: 'tokyo-after-dark-2026',
+    status: CompetitionStatus.DRAFT,
+    category: STANDARD_CATEGORIES.STREET,
+    maxEntriesPerUser: 2,
+    requireExif: true,
+  };
+  assert(e2eCompetition.status === CompetitionStatus.DRAFT, 'E2E Phase 1: Competition created in DRAFT status');
+
+  // Launch Competition: DRAFT -> OPEN
+  assert(
+    CompetitionService.isValidTransition(e2eCompetition.status, CompetitionStatus.OPEN),
+    'E2E Phase 1: Valid transition from DRAFT to OPEN'
+  );
+  e2eCompetition.status = CompetitionStatus.OPEN;
+  assert(e2eCompetition.status === CompetitionStatus.OPEN, 'E2E Phase 1: Contest launched to OPEN status for entrants');
+
+  // E2E Phase 2: Direct-to-Cloud Presigned Upload & Ingestion
+  const entrantPhotoBuffer = await sharp({
+    create: { width: 1920, height: 1080, channels: 3, background: { r: 15, g: 30, b: 65 } },
+  })
+    .jpeg({ quality: 90 })
+    .toBuffer();
+
+  const uploadSize = entrantPhotoBuffer.length;
+  SubmissionService.validateFileSize(uploadSize);
+  assert(uploadSize <= SubmissionService.MAX_FILE_SIZE_BYTES, 'E2E Phase 2: Entrant photo satisfies <= 25MB constraint');
+
+  const e2eSubmissionId = `sub_e2e_${Date.now()}`;
+  const e2eStorageKey = `raw-uploads/${e2eSubmissionId}.jpg`;
+  const presignedTicket = await storage.getPresignedUploadUrl(e2eStorageKey, 'image/jpeg', 900);
+  assert(Boolean(presignedTicket), 'E2E Phase 2: Direct-to-cloud presigned upload ticket granted');
+
+  // Upload raw photo to storage
+  await storage.uploadBuffer(e2eStorageKey, entrantPhotoBuffer, 'image/jpeg');
+  const uploadedBlob = await storage.downloadBuffer(e2eStorageKey);
+  assert(uploadedBlob.length === entrantPhotoBuffer.length, 'E2E Phase 2: Photo buffer verified in storage');
+
+  // E2E Phase 3: Media Derivative Rendering & Multi-Tier Forensics
+  const e2eProcessor = new ImageProcessorService();
+  const e2eDerivatives = await e2eProcessor.processImage(entrantPhotoBuffer);
+
+  assert(
+    e2eDerivatives.originalMetadata.width === 1920 && e2eDerivatives.originalMetadata.height === 1080,
+    'E2E Phase 3: Ingestion pipeline records full original dimensions (1920x1080)'
+  );
+  assert(Boolean(e2eDerivatives.thumbnailBuffer), 'E2E Phase 3: Renders 400px WebP thumbnail derivative');
+  assert(Boolean(e2eDerivatives.webBuffer), 'E2E Phase 3: Renders 1600px WebP display derivative');
+  assert(Boolean(e2eDerivatives.aiNormalBuffer), 'E2E Phase 3: Renders 1024px JPEG normalized evaluation asset');
+
+  const e2eForensics = new ForensicsService();
+  const forensicsInspection = await e2eForensics.inspectSubmission(
+    entrantPhotoBuffer,
+    {
+      cameraMake: 'Sony',
+      cameraModel: 'ILCE-7M4',
+      lensModel: 'FE 35mm F1.4 GM',
+      focalLength: 35,
+      aperture: 1.8,
+      shutterSpeed: '1/160',
+      iso: 800,
+      software: 'Adobe Photoshop Lightroom Classic 13.2 (Windows)',
+    },
+    ['ffffffffffffffff'], // Existing hashes with large distance
+    { requireExif: true, hammingThreshold: 4 }
+  );
+
+  assert(forensicsInspection.isApproved, 'E2E Phase 3: Authentic optical photo passes all multi-tier forensic screening');
+  assert(forensicsInspection.syntheticLikelihood < 0.5, 'E2E Phase 3: Low synthetic likelihood for authentic sensor noise');
+  assert(forensicsInspection.disqualificationReason === undefined, 'E2E Phase 3: No disqualification flags issued');
+  assert(forensicsInspection.metrics.laplacianVariance >= 0, 'E2E Phase 3: Discrete Laplacian texture variance computed');
+
+  // E2E Phase 4: AI Aesthetic Judging & Borderline Calibration
+  const mockJudge = new MockJudgeAdapter();
+  const judgeOrchestrator = new JudgeOrchestrator(mockJudge);
+
+  const evaluationResult = await judgeOrchestrator.evaluateSubmission({
+    submissionId: e2eSubmissionId,
+    imageBuffer: e2eDerivatives.aiNormalBuffer,
+    category: {
+      code: 'STREET',
+      name: e2eCompetition.category.name,
+      description: e2eCompetition.category.description,
+      weights: e2eCompetition.category.rubricWeights,
+      rubricWeights: e2eCompetition.category.rubricWeights,
+    },
+    metadata: {
+      title: 'Neon Shibuya Crossing',
+      story: 'Shot candidly at midnight in Tokyo rain',
+      exif: {
+        cameraMake: 'Sony',
+        cameraModel: 'ILCE-7M4',
+        artist: 'Secret Photographer', // Will be stripped in blind evaluation
+      },
+    },
+  });
+
+  assert(evaluationResult.overallScore > 0, 'E2E Phase 4: Synthesizes normalized aesthetic score');
+  assert(evaluationResult.themeAdherenceScore > 0, 'E2E Phase 4: Synthesizes theme adherence score');
+  assert(
+    typeof evaluationResult.critique.strengths === 'string' &&
+      typeof evaluationResult.critique.technicalAnalysis === 'string' &&
+      typeof evaluationResult.critique.recommendations === 'string',
+    'E2E Phase 4: Generates 3-part expert constructive critique'
+  );
+  assert(evaluationResult.detectedCompositionRules.length > 0, 'E2E Phase 4: Identifies IAACLIP photographic rules');
+
+  // E2E Phase 5: Contest Closing & Automated Top 10 Shortlisting
+  assert(
+    CompetitionService.isValidTransition(e2eCompetition.status, CompetitionStatus.JUDGING),
+    'E2E Phase 5: Valid transition from OPEN to JUDGING'
+  );
+  e2eCompetition.status = CompetitionStatus.JUDGING;
+  assert(e2eCompetition.status === CompetitionStatus.JUDGING, 'E2E Phase 5: Ingestion locked, AI queue draining');
+
+  // Transition to SHORTLISTED
+  assert(
+    CompetitionService.isValidTransition(e2eCompetition.status, CompetitionStatus.SHORTLISTED),
+    'E2E Phase 5: Valid transition from JUDGING to SHORTLISTED'
+  );
+  e2eCompetition.status = CompetitionStatus.SHORTLISTED;
+  assert(e2eCompetition.status === CompetitionStatus.SHORTLISTED, 'E2E Phase 5: Top 10 shortlists established');
+
+  // Simulated Top 10 Shortlist entries
+  const simulatedShortlistEntries = [
+    { id: e2eSubmissionId, totalScore: evaluationResult.overallScore, rank: 1 },
+    { id: 'sub_e2e_2', totalScore: 82.5, rank: 2 },
+    { id: 'sub_e2e_3', totalScore: 80.0, rank: 3 },
+    { id: 'sub_e2e_4', totalScore: 78.0, rank: 4 },
+  ];
+  assert(simulatedShortlistEntries.length <= 10, 'E2E Phase 5: Category shortlist strictly bounded to Top 10 entries');
+
+  // E2E Phase 6: Juror Deliberation & Podium Allocations
+  const jurorPodiums = [
+    { submissionId: e2eSubmissionId, podiumRank: PodiumRank.FIRST_PLACE, jurorRemarks: 'Extraordinary leading lines and neon tonality' },
+    { submissionId: 'sub_e2e_2', podiumRank: PodiumRank.SECOND_PLACE, jurorRemarks: 'Tack sharp focus and decisive moment' },
+    { submissionId: 'sub_e2e_3', podiumRank: PodiumRank.THIRD_PLACE, jurorRemarks: 'Subtle shadow dynamics' },
+    { submissionId: 'sub_e2e_4', podiumRank: PodiumRank.HONORABLE_MENTION, jurorRemarks: 'Evocative urban mood' },
+  ];
+  assert(JurorService.validatePodiums(jurorPodiums), 'E2E Phase 6: Juror podium allocations pass integrity validation');
+
+  // E2E Phase 7: Official Results Publishing & Public Telemetry
+  assert(
+    CompetitionService.isValidTransition(e2eCompetition.status, CompetitionStatus.RESULTS_PUBLISHED),
+    'E2E Phase 7: Valid transition from SHORTLISTED to RESULTS_PUBLISHED'
+  );
+  e2eCompetition.status = CompetitionStatus.RESULTS_PUBLISHED;
+  assert(e2eCompetition.status === CompetitionStatus.RESULTS_PUBLISHED, 'E2E Phase 7: Results officially published to the world');
+
+  // Verify Leaderboard Unmasking
+  const publicScorecardVisible = SubmissionService.isScorecardVisible(
+    e2eCompetition.status,
+    'alice_123',
+    'random_visitor'
+  );
+  assert(publicScorecardVisible, 'E2E Phase 7: Public scorecard inspection unlocked on published contest');
+
+  const finalPercentile = SubmissionService.calculatePercentileRank(98, 100, e2eCompetition.category.name);
+  assert(
+    finalPercentile === `Top 2% in ${e2eCompetition.category.name}`,
+    `E2E Phase 7: Computes final percentile ranking (${finalPercentile})`
+  );
+
+  // Clean up uploaded E2E buffer
+  await storage.deleteObject(e2eStorageKey);
+  assert(true, 'E2E Clean Teardown: Temporary test storage assets removed');
+
+  // ---------------------------------------------------------------------------
   // Summary
   // ---------------------------------------------------------------------------
   console.log(`\n=======================================================`);

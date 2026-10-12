@@ -28,9 +28,10 @@ export class MockJudgeAdapter implements IJudgeAdapter {
     const themeAdherenceScore = 95.0;
     const defectPenaltyPoints = 0.0;
 
+    const weights = request.category.weights || (request.category as any).rubricWeights;
     const computedOverall = ScoringMath.calculateTotalScore(
       attributeScores,
-      request.category.weights,
+      weights,
       themeAdherenceScore,
       defectPenaltyPoints
     );
