@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>PIXEL PRIZE // THE PHOTO HALL</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Pixelify+Sans:wght@700&amp;family=Space+Grotesk:wght@600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}.grid-bg{background-size:32px 32px;background-image:linear-gradient(to right,rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.02) 1px,transparent 1px);}.font-pixel{font-family:'Pixelify Sans',cursive,monospace;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-dim": "#131413", "surface-tint": "#94da3a", "surface-bright": "#393938", "surface-container-lowest": "#0d0e0d", "on-secondary": "#28332a", "on-tertiary-fixed": "#191d19", "surface-container": "#1f201f", "on-tertiary-container": "#616560", "primary-fixed-dim": "#94da3a", "inverse-on-surface": "#30312f", "on-background": "#e4e2e0", "outline-variant": "#424937", "on-error-container": "#ffdad6", "on-tertiary": "#2d312d", "surface-container-highest": "#343534", "secondary-container": "#3e4a3f", "on-surface-variant": "#c1cab1", "on-error": "#690005", "secondary": "#bdcabc", "on-primary": "#1f3700", "secondary-fixed": "#d9e6d8", "on-tertiary-fixed-variant": "#444843", "tertiary": "#ffffff", "error-container": "#93000a", "surface": "#131413", "surface-container-low": "#1b1c1b", "surface-container-high": "#292a29", "secondary-fixed-dim": "#bdcabc", "inverse-surface": "#e4e2e0", "outline": "#8c947d", "tertiary-fixed": "#e0e3dd", "on-primary-container": "#447000", "on-primary-fixed-variant": "#2f4f00", "on-secondary-fixed-variant": "#3e4a3f", "tertiary-container": "#e0e3dd", "on-secondary-container": "#acb8ab", "error": "#ffb4ab", "on-surface": "#e4e2e0", "tertiary-fixed-dim": "#c4c7c1", "primary-container": "#aff755", "on-secondary-fixed": "#141e16", "inverse-primary": "#406900", "background": "#131413", "primary": "#ffffff", "surface-variant": "#343534", "primary-fixed": "#aff755", "on-primary-fixed": "#102000" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter": "1.5rem", "gutter-mobile": "0.75rem", "space-lg": "1.5rem", "space-md": "1rem", "margin": "2.5rem", "space-xs": "0.25rem", "space-xl": "3rem", "space-sm": "0.5rem", "margin-mobile": "1rem" }, "fontFamily": { "body-md": [ "JetBrains Mono" ], "label-telemetry": [ "Space Mono" ], "headline-xl": [ "Space Grotesk" ], "body-sm": [ "JetBrains Mono" ], "headline-lg": [ "Space Grotesk" ], "title-sm": [ "JetBrains Mono" ], "headline-lg-mobile": [ "Space Grotesk" ], "headline-md": [ "Space Grotesk" ], "score-display": [ "Space Grotesk" ], "headline-xl-mobile": [ "Space Grotesk" ], "label-bracket": [ "JetBrains Mono" ] }, "fontSize": { "body-md": [ "13px", { "lineHeight": "22px", "letterSpacing": "0.01em", "fontWeight": "400" } ], "label-telemetry": [ "10px", { "lineHeight": "14px", "letterSpacing": "0.14em", "fontWeight": "700" } ], "headline-xl": [ "56px", { "lineHeight": "60px", "letterSpacing": "-0.04em", "fontWeight": "700" } ], "body-sm": [ "11px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "400" } ], "headline-lg": [ "32px", { "lineHeight": "38px", "letterSpacing": "-0.03em", "fontWeight": "700" } ], "title-sm": [ "15px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" } ], "headline-lg-mobile": [ "24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "headline-md": [ "20px", { "lineHeight": "26px", "letterSpacing": "-0.02em", "fontWeight": "600" } ], "score-display": [ "44px", { "lineHeight": "44px", "letterSpacing": "-0.05em", "fontWeight": "700" } ], "headline-xl-mobile": [ "36px", { "lineHeight": "40px", "letterSpacing": "-0.03em", "fontWeight": "700" } ], "label-bracket": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "500" } ] } } } };</script></head><body class="bg-background font-body-md text-on-surface grid-bg min-h-screen selection:bg-primary-container selection:text-on-primary-fixed"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-md"><div class="w-full h-px bg-primary-container"></div><div class="h-16 w-full px-margin-mobile md:px-margin flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md shrink-0"><a class="flex items-baseline gap-space-sm group" data-path="the-hall" href="#"><span class="font-pixel text-title-sm md:text-headline-md tracking-wider text-primary group-hover:text-primary-container transition-colors uppercase">PIXEL PRIZE</span><span class="hidden sm:inline-block font-label-telemetry text-label-telemetry text-on-surface-variant"><span class="text-primary-container">[</span>LIVE / ENGINE V4.2<span class="text-primary-container">]</span></span></a></div><nav class="hidden lg:flex items-center gap-space-xs font-label-bracket text-label-bracket" data-active-classes="bg-surface-container-high text-primary-container font-semibold"><a aria-current="page" class="px-space-sm py-space-xs transition-colors uppercase bg-surface-container-high text-primary-container font-semibold" data-path="the-hall" href="#">[THE HALL]</a><a class="px-space-sm py-space-xs text-on-surface-variant hover:text-primary transition-colors uppercase" data-path="head-to-head" href="#">[HEAD TO HEAD]</a><a class="px-space-sm py-space-xs text-on-surface-variant hover:text-primary transition-colors uppercase" data-path="competitions" href="#">[COMPETITIONS]</a><a class="px-space-sm py-space-xs text-on-surface-variant hover:text-primary transition-colors uppercase" data-path="map" href="#">[MAP]</a></nav><div class="flex items-center gap-space-sm shrink-0"><a class="font-label-telemetry text-label-telemetry text-primary-container hover:bg-surface-container px-space-sm py-space-xs transition-colors uppercase" data-path="sign-in" href="#">{SIGN IN}</a><a class="font-label-telemetry text-label-telemetry bg-primary-container text-on-primary-fixed px-space-md py-space-xs hover:bg-surface-container-lowest hover:text-primary-container transition-colors uppercase font-bold" data-path="enter-contest" href="#">{ENTER CONTEST}</a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-[calc(100vh-140px)]"><div class="flex flex-col w-full text-on-surface select-none">
+<!-- ========================================================================= -->
+<!-- 01. NAV SUB-HEADER & HERO MATRIX (Pixel Brick Sans + Telemetry Ticker)   -->
+<!-- ========================================================================= -->
+<section class="relative w-full overflow-hidden bg-surface-container-lowest">
+<!-- Top hairline indicator strip -->
+<div class="w-full h-px bg-primary-container"></div>
+<!-- Live Telemetry Stream Ticker -->
+<div class="w-full bg-surface-container-low px-margin-mobile md:px-margin py-space-xs flex items-center justify-between overflow-x-auto text-nowrap">
+<div class="flex items-center gap-space-md font-label-telemetry text-label-telemetry text-on-surface-variant tracking-widest uppercase">
+<span class="inline-flex items-center gap-space-xs text-primary-container">
+<span class="w-1.5 h-1.5 bg-primary-container inline-block animate-ping"></span>
+<span>SYS::STREAMING</span>
+</span>
+<span class="text-surface-container-highest">/</span>
+<span>48,920 PHOTOS APPRAISED</span>
+<span class="text-surface-container-highest">/</span>
+<span>114 COUNTRIES</span>
+<span class="text-surface-container-highest">/</span>
+<span class="text-primary">14 OPEN COMPETITIONS</span>
+<span class="text-surface-container-highest">/</span>
+<span>JURY SPEED: 0.82S</span>
+<span class="text-surface-container-highest">/</span>
+<span class="text-primary-container">LATENCY: 14MS</span>
+</div>
+<div class="hidden xl:flex items-center gap-space-xs font-label-bracket text-label-bracket text-on-surface-variant uppercase">
+<span>ENGINE CLK: 3.4GHZ</span>
+<span class="text-primary-container">[STABLE]</span>
+</div>
+</div>
+<!-- Massive Cropped Typography Canvas -->
+<div class="relative w-full px-margin-mobile md:px-margin pt-space-xl pb-space-lg flex flex-col items-start justify-between min-h-[480px]">
+<div class="w-full flex items-center justify-between font-label-telemetry text-label-telemetry text-on-surface-variant uppercase mb-space-sm">
+<span class="tracking-widest">[ARCHIVAL CORE // EXHIBIT SALON 01]</span>
+<span class="text-primary-container tracking-widest">{STANDALONE JURY MATRIX}</span>
+</div>
+<!-- Deliberately cropped massive wordmark -->
+<div class="w-full -ml-2 md:-ml-4 overflow-visible my-space-md">
+<h1 class="font-pixel text-[68px] sm:text-[110px] md:text-[144px] lg:text-[188px] leading-[0.88] tracking-tight uppercase text-primary whitespace-nowrap opacity-95">
+          PIXELÂ PRIZE
+        </h1>
+</div>
+<!-- Tagline & Actions Row -->
+<div class="w-full flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg mt-space-md">
+<div class="max-w-2xl space-y-space-xs">
+<div class="font-label-telemetry text-label-telemetry text-primary-container tracking-widest">
+            // CALIBRATED SENSOR AUDITING SUITE
+          </div>
+<p class="font-body-md text-body-md text-on-surface-variant tracking-wider uppercase font-semibold">
+            PHOTOS IN. SCORES OUT. THE BEST SHOTS OF THE WORLD, JUDGED BY AI.
+          </p>
+<p class="font-body-sm text-body-sm text-on-secondary-container">
+            Raw spectral variance, golden ratio fidelity, spatial depth coherence, and storytelling cadence appraised across 64 neural nodes.
+          </p>
+</div>
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-sm shrink-0">
+<a class="bg-primary-container text-on-primary-fixed font-label-telemetry text-label-telemetry font-bold px-space-xl py-space-md uppercase hover:bg-surface-container-high hover:text-primary-container transition-all flex items-center justify-center gap-space-xs text-center shadow-lg shadow-primary-container/10" href="#the-hall">
+<span>{ENTER THE HALL}</span>
+<span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+</a>
+<a class="bg-surface-container text-primary font-label-telemetry text-label-telemetry px-space-lg py-space-md uppercase hover:text-primary-container hover:bg-surface-container-high transition-colors flex items-center justify-center gap-space-xs text-center" href="#head-to-head">
+<span>[VIEW HEAD-TO-HEAD]</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 02. THE HALL (Salon-Style Gallery Wall & Dynamic Framing)                 -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl" id="the-hall">
+<div class="px-margin-mobile md:px-margin space-y-space-lg">
+<!-- Section Didactic Header & Genre Filters -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
+<div>
+<div class="font-label-telemetry text-label-telemetry text-primary-container uppercase tracking-widest flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-primary-container inline-block"></span>
+<span>GALLERY 01 // SALON WALL EXHIBITION</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-primary uppercase mt-space-xs">
+            THE ARCHIVAL HALL
+          </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xl mt-space-xs">
+            Curated contact sheet of tier-one submissions. Neural score badges reflect absolute dynamic range, chromatic micro-balance, and composition weight.
+          </p>
+</div>
+<!-- Genre Filter Bar (Monospace Brackets) -->
+<div class="flex flex-wrap items-center gap-space-xs font-label-bracket text-label-bracket uppercase" id="genre-filters">
+<button class="px-space-sm py-space-xs bg-primary-container text-on-primary-fixed font-bold tracking-wider" type="button">[ALL]</button>
+<button class="px-space-sm py-space-xs bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors tracking-wider" type="button">[LANDSCAPE]</button>
+<button class="px-space-sm py-space-xs bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors tracking-wider" type="button">[STREET]</button>
+<button class="px-space-sm py-space-xs bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors tracking-wider" type="button">[PORTRAIT]</button>
+<button class="px-space-sm py-space-xs bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors tracking-wider" type="button">[WILDLIFE]</button>
+<button class="px-space-sm py-space-xs bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors tracking-wider" type="button">[MACRO]</button>
+<button class="px-space-sm py-space-xs bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors tracking-wider" type="button">[ASTRO]</button>
+<button class="px-space-sm py-space-xs bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors tracking-wider" type="button">[ARCHITECTURE]</button>
+</div>
+</div>
+<!-- Salon-Style Hanging Matrix: 12-14 frames with dark matte bodies & technical plaques -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-space-md">
+<!-- FRAME 01: Landscape wide 16:9 - Aurora Over Reykjanes (Span 8) -->
+<article class="lg:col-span-8 bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="relative w-full aspect-[16/9] overflow-hidden bg-surface-container-lowest">
+<img alt="Aurora Over Reykjanes" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" src="https://lh3.googleusercontent.com/aida/AEtjO1WwqiuXaDMbew-vXC2gu47Wo7oExeU_688QB7YdEQcNTSPuaC2elIpAaJJIJSnHqHLRE4tbwalzeiSmKQHL3u5ee8JwDw0ye5HiikxAD2F5JzwfrfAC-FernC05SPP_9Z012lT8fiMM-G-CX0DEnPZWTJr6Ly0ayyBxX5-hjqprb6l9lHAuae5txfNp5hBZzdmt5vSSXXuQUFThQTdd0FYTHYO7M4QLP8WAiLTClBFEsTtifagrGL9Uphk"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/85 backdrop-blur-sm px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+              [AI RESOLVED: 100% RAW]
+            </div>
+<div class="absolute bottom-2 right-2 bg-surface-container-lowest/90 px-space-sm py-space-xs font-label-telemetry text-label-telemetry text-on-surface-variant hidden md:block">
+              ISO 800 // 14MM // F/1.8 // 15.0S
+            </div>
+</div>
+<!-- Museum Plaque -->
+<div class="mt-space-sm pt-space-xs flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm">
+<div class="min-w-0">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">LOT #0012 // ISL</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase truncate font-bold">AURORA OVER REYKJANES</h3>
+<div class="font-body-sm text-body-sm text-on-surface-variant uppercase">@ELENA_ROSTOVA <span class="text-primary-container">[ISLAND]</span></div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant block uppercase">JURY SCORE</span>
+<span class="font-score-display text-score-display text-primary-container leading-none font-bold">98.3</span>
+</div>
+</div>
+</article>
+<!-- FRAME 02: Wildlife - Phantom of Himalayas (Span 4) -->
+<article class="lg:col-span-4 bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="relative w-full aspect-[4/3] lg:aspect-auto lg:h-[340px] overflow-hidden bg-surface-container-lowest">
+<img alt="Phantom of Himalayas" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXCGHUVTaUDnb1Ysd8vpIXtJTIjiRznxWRV0JIEs3Y0awm0LQmfeL9f5BHzlEbMMPZgSTJWf7tnSgzRX5DhiLCXgWaUn8JgGf-zq4yr6PFCX2TkJQruruP8S3ZpfLdZa1avCAPoSAoseGBWOCLKqIWRAJTf6faSXgp24zcChEexPv-2A8tf6Z6Iy7mPoQ6FXRnxGxmLsxYYux5G2q2S7NPq1J-2j7vMyFhlFCyeDi2Khzny1FXY9WN"/>
+<div class="absolute top-2 right-2 bg-primary-container text-on-primary-fixed font-label-telemetry text-label-telemetry font-bold px-space-xs py-0.5">
+              â TOP WILDLIFE
+            </div>
+</div>
+<!-- Plaque -->
+<div class="mt-space-sm pt-space-xs flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm">
+<div class="min-w-0">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">LOT #0045 // NPL</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase truncate font-bold">PHANTOM OF HIMALAYAS</h3>
+<div class="font-body-sm text-body-sm text-on-surface-variant uppercase">@TENZING_K <span class="text-primary-container">[NEPAL]</span></div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant block uppercase">JURY SCORE</span>
+<span class="font-score-display text-score-display text-primary-container leading-none font-bold">99.1</span>
+</div>
+</div>
+</article>
+<!-- FRAME 03: Portrait Vertical - The Cobbler of Oslo (Span 4) -->
+<article class="lg:col-span-4 bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="relative w-full aspect-[3/4] overflow-hidden bg-surface-container-lowest">
+<img alt="The Cobbler of Oslo" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOqpkvVYPK6yDdFHyC0EbY_8gDxwiSWEUED40M0eNEaLDcsfxRxnE2sdA-xvOfbZus4CGHxGQnsEzcsZxmOJxGPPNuVOoEGObAJqW33FWqrX_ZUXbXv75o6tquE9SSFQugsaxwNlsTRgFHWc3Gpp6AZkgWjzTaLNL_9nA0jV-_oHxZWfMLpqbgTLfzsnqBGF3320g2w-2sdSZHVhwvLJa8QxxAhpcZTVVNDegjaw4C8RYr6P2X4cIR"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/85 backdrop-blur-sm px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+              [AI RESOLVED: 100% RAW]
+            </div>
+</div>
+<!-- Plaque -->
+<div class="mt-space-sm pt-space-xs flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm">
+<div class="min-w-0">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">LOT #0088 // NOR</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase truncate font-bold">THE COBBLER OF OSLO</h3>
+<div class="font-body-sm text-body-sm text-on-surface-variant uppercase">@S_LINDQVIST <span class="text-primary-container">[NORWAY]</span></div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant block uppercase">JURY SCORE</span>
+<span class="font-score-display text-score-display text-primary-container leading-none font-bold">99.4</span>
+</div>
+</div>
+</article>
+<!-- FRAME 04: Astro Wide - Patagonian Cosmos (Span 5) -->
+<article class="lg:col-span-5 bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="relative w-full aspect-[16/10] overflow-hidden bg-surface-container-lowest">
+<img alt="Patagonian Cosmos" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfry1mYixbAzGbs0RcFcdzlsuPkk3J2Fd59_DLxXAqHmjXVBwO_dGhxb3p4AZV6CsrKQN4m-r6njGLtxlk9t2tnXiMz0VDX0Vjr1lgXLvWkKZsr0SZaiAJiCEgYdeaXFbfomuLp-N9nA7Q-j_bh13OOQATXd_9zl8TWWJK0K1mPASEmyMaAm5fQfFSsYDQT7kuJ-Th97Un7A8dyoRGTUfO-1KK2jQQXjw5ZyXSLG9djJeF80EfgELp"/>
+<div class="absolute bottom-2 left-2 bg-surface-container-lowest/85 backdrop-blur-sm px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-on-surface-variant">
+              TRACKER: SKY-WATCHER // 14X COMPOSITE
+            </div>
+</div>
+<!-- Plaque -->
+<div class="mt-space-sm pt-space-xs flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm">
+<div class="min-w-0">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">LOT #0102 // CHL</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase truncate font-bold">PATAGONIAN COSMOS</h3>
+<div class="font-body-sm text-body-sm text-on-surface-variant uppercase">@M_VALENZUELA <span class="text-primary-container">[CHILE]</span></div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant block uppercase">JURY SCORE</span>
+<span class="font-score-display text-score-display text-primary-container leading-none font-bold">98.9</span>
+</div>
+</div>
+</article>
+<!-- FRAME 05: Macro Square - Dew Matrix 07 (Span 3) -->
+<article class="lg:col-span-3 bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="relative w-full aspect-square overflow-hidden bg-surface-container-lowest">
+<img alt="Dew Matrix 07" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2zrLfHLBNxhpEQjgKggQzeGVz8pa7fSZLEi7HhsxQ4IhSX3gZ_IihZiW1pGDG_1zrBoqUeXxjHU2_cCgogPuoIVK2B-h_SyqBx0LecsHH1JIZkjr8TluBOdQGcl_Jx5ASfYa_X17bZFH5O5reJ0qi8KD2pBwVPfANTOPz9DgOXT2d3WVfZ3F6j9SB5E0yS5jDT-MHzyZOO2_qAPiw_YiEt_fsdCJD46ri7LmpwQwNPncWl3HwwICY"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/90 px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+              MAG 2.5:1
+            </div>
+</div>
+<!-- Plaque -->
+<div class="mt-space-sm pt-space-xs flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm">
+<div class="min-w-0">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">LOT #0114 // JPN</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase truncate font-bold">DEW MATRIX 07</h3>
+<div class="font-body-sm text-body-sm text-on-surface-variant uppercase">@KENJI_SATO <span class="text-primary-container">[JAPAN]</span></div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant block uppercase">JURY SCORE</span>
+<span class="font-score-display text-score-display text-primary-container leading-none font-bold">97.6</span>
+</div>
+</div>
+</article>
+<!-- FRAME 06: Street Candid In Rain (Span 4) -->
+<article class="lg:col-span-4 bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="relative w-full aspect-[4/3] overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" data-alt="Cinematic street photography in heavy neon-lit Tokyo rain at night with glowing umbrellas, reflective wet asphalt, sharp moody cyberpunk aesthetic and high dynamic range blacks." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8h_MngUdp5lvTYbD9Gj6my4hUPul1lcM3ULL6t3L0R_Y42wV-VwAzO3OfVz7EWTB4VbNEv_3hcIYmgb0ye1Iq8ixnBy8FvtQcpYxNgKb30_KOa63qkf_S9HeXdvmojMxsOetmeGtW9qDaaVn_NcUchnUQXm7cvXOAChT2tJ_J8tLAa3hrez9HODchHhoVvXAUL7PHqrg3eNGOaytQWMjz8nlhCPSCpYAGKrBW9KnCuP-TlvVqLO0r"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/85 backdrop-blur-sm px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+              [AI RESOLVED: 100% RAW]
+            </div>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm">
+<div class="min-w-0">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">LOT #0131 // GBR</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase truncate font-bold">SOHO REFRACTIONS</h3>
+<div class="font-body-sm text-body-sm text-on-surface-variant uppercase">@CALLUM_REID <span class="text-primary-container">[UK]</span></div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant block uppercase">JURY SCORE</span>
+<span class="font-score-display text-score-display text-primary-container leading-none font-bold">96.8</span>
+</div>
+</div>
+</article>
+<!-- FRAME 07: Architecture - Brutalist Facade (Span 4) -->
+<article class="lg:col-span-4 bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="relative w-full aspect-[4/3] overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" data-alt="Stark architectural photography of geometric brutalist concrete facade under razor sharp dramatic morning sunlight, casting deep black shadows against textured grey concrete, museum quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3UUgEdo0gRCgwRKnHz01o9R-out8pfrJ1Hl2jt3Oapg74YuL2C2wl2bmrJbks0DGYWF95G8HqiikzwggRUb1tLLv-bL9Bg0VB2wj1awfc1jVmosraG0JKsZKIG0e22JzjOFg6lqZYgmdm-sLUS7KwfOcXWSon3M-uqjOU4HespZZPOz7u24Q9KodNCcurURkxJ7Z7jk8wSvFmPboilG9zJ-t8-sYMom0lLxD7XINc97fBoO6HfOqb"/>
+<div class="absolute bottom-2 right-2 bg-surface-container-lowest/85 backdrop-blur-sm px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-on-surface-variant">
+              TILT-SHIFT 17MM // 0.0 DEG
+            </div>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm">
+<div class="min-w-0">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">LOT #0145 // DEU</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase truncate font-bold">MONOLITH 14</h3>
+<div class="font-body-sm text-body-sm text-on-surface-variant uppercase">@ANKE_WEISS <span class="text-primary-container">[GERMANY]</span></div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant block uppercase">JURY SCORE</span>
+<span class="font-score-display text-score-display text-primary-container leading-none font-bold">97.4</span>
+</div>
+</div>
+</article>
+<!-- FRAME 08: Desert Dunes - Namib (Span 4) -->
+<article class="lg:col-span-4 bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="relative w-full aspect-[4/3] overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]" data-alt="Aerial fine-art landscape of Sossusvlei desert red sand dunes in Namibia with crisp knife-edge dune shadows, extreme golden hour side lighting, pristine abstract geometric texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCF3g47MMDPv39PMW97tmivH_d7Uy30KIuKN0OpERI7Oz9eiSz96QDI4Qk3w7qaxJ0CQ9bQlInozkVPHjx5sGcT80gddlpoySHNabOrSMvRibTl4GMZEZARbgSD8gd500Fbj3zAnD0YwkpoY7oSpmrYfpC8212DbuLTQG5lGUeUqQ-MGeIyjxCR608JCobH8xEI6GxIuOZn8hP1E0vzd7z6eT2We8sowmH9S6H6mvKyggCRRlc1emp4"/>
+<div class="absolute top-2 right-2 bg-surface-container-lowest/85 backdrop-blur-sm px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+              [AI RESOLVED: 100% RAW]
+            </div>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm">
+<div class="min-w-0">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">LOT #0162 // NAM</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase truncate font-bold">RIDGE AT DAWN</h3>
+<div class="font-body-sm text-body-sm text-on-surface-variant uppercase">@T_HAUKIPURO <span class="text-primary-container">[FINLAND]</span></div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant block uppercase">JURY SCORE</span>
+<span class="font-score-display text-score-display text-primary-container leading-none font-bold">95.9</span>
+</div>
+</div>
+</article>
+</div>
+<!-- Salon Footnote Telemetry Bar -->
+<div class="bg-surface-container-low p-space-md flex flex-col md:flex-row items-center justify-between gap-space-sm text-on-surface-variant font-label-telemetry text-label-telemetry">
+<div class="flex items-center gap-space-sm">
+<span class="text-primary-container">[ACTIVE SALON FILTER: ALL 14 ARRAYS LOADED]</span>
+<span class="hidden sm:inline">DYNAMIC CONTRAST RANGE EXCEEDS 16.4 EV</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span>SORT BY: HIGHEST NEURAL ACCORD</span>
+<a class="text-primary hover:text-primary-container uppercase font-bold" href="#">[EXPAND ARCHIVE +240]</a>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 03. HEAD TO HEAD (The 'Compared' Module)                                  -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface py-space-xl" id="head-to-head">
+<div class="px-margin-mobile md:px-margin space-y-space-lg">
+<!-- Module Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md pb-space-sm">
+<div>
+<div class="font-label-telemetry text-label-telemetry text-primary-container uppercase tracking-widest flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-primary-container inline-block"></span>
+<span>JURY COGNITION // DIRECT PAIRWISE AUDIT</span>
+</div>
+<h2 class="font-pixel text-[28px] sm:text-[38px] md:text-[46px] text-primary uppercase mt-space-xs leading-none">
+            HEAD TO HEAD // REAL-TIME DELIBERATION
+          </h2>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="bg-surface-container-high px-space-md py-space-xs text-primary font-label-bracket text-label-bracket uppercase hover:bg-surface-container-highest transition-colors" type="button">
+            [&lt;- PREV PAIR]
+          </button>
+<button class="bg-primary-container text-on-primary-fixed font-label-bracket text-label-bracket font-bold px-space-md py-space-xs uppercase hover:bg-surface-container-high hover:text-primary-container transition-colors" type="button">
+            [NEXT PAIR -&gt;]
+          </button>
+</div>
+</div>
+<!-- Comparative Stage -->
+<div class="grid grid-cols-1 lg:grid-cols-11 gap-space-md items-stretch bg-surface-container-lowest p-space-md">
+<!-- PHOTO A: Snow Leopard (Nepalese Himalayas) -->
+<div class="lg:col-span-5 bg-surface-container-low p-space-md flex flex-col justify-between">
+<div class="space-y-space-sm">
+<div class="flex items-center justify-between font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+<span>CONTENDER [A] // LOT #0045</span>
+<span class="text-primary-container">â WINNING VARIANT</span>
+</div>
+<div class="relative aspect-[16/10] overflow-hidden bg-surface-container-lowest">
+<img alt="Snow leopard on Himalayan ridge" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXCGHUVTaUDnb1Ysd8vpIXtJTIjiRznxWRV0JIEs3Y0awm0LQmfeL9f5BHzlEbMMPZgSTJWf7tnSgzRX5DhiLCXgWaUn8JgGf-zq4yr6PFCX2TkJQruruP8S3ZpfLdZa1avCAPoSAoseGBWOCLKqIWRAJTf6faSXgp24zcChEexPv-2A8tf6Z6Iy7mPoQ6FXRnxGxmLsxYYux5G2q2S7NPq1J-2j7vMyFhlFCyeDi2Khzny1FXY9WN"/>
+<div class="absolute bottom-2 left-2 bg-surface-container-lowest/90 px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+                TENZING K. / NEPAL
+              </div>
+</div>
+<!-- Overall Score A -->
+<div class="flex items-baseline justify-between pt-space-xs">
+<div>
+<h4 class="font-title-sm text-title-sm text-primary uppercase font-bold">PHANTOM OF HIMALAYAS</h4>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">SENSOR SPREAD: 61.0 MP BSI</span>
+</div>
+<div class="text-right">
+<span class="font-pixel text-[46px] sm:text-[56px] text-primary-container leading-none">99.1</span>
+</div>
+</div>
+</div>
+<!-- 6-Axis Rubric Breakdown for Contender A -->
+<div class="space-y-space-xs mt-space-md pt-space-sm bg-surface-container p-space-sm">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase pb-1 flex justify-between">
+<span>RUBRIC DIMENSION</span>
+<span>INDEX VALUE</span>
+</div>
+<!-- Rubric 1: Composition (WINNER) -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">COMPOSITION</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+</div>
+<span class="text-primary-container font-bold w-12 text-right">99.4</span>
+</div>
+<!-- Rubric 2: Lighting (WINNER) -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">LIGHTING</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+</div>
+<span class="text-primary-container font-bold w-12 text-right">98.8</span>
+</div>
+<!-- Rubric 3: Color -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">COLOR HARMONY</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+</div>
+<span class="text-on-surface-variant w-12 text-right">94.2</span>
+</div>
+<!-- Rubric 4: Story (WINNER) -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">STORY CADENCE</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+</div>
+<span class="text-primary-container font-bold w-12 text-right">99.8</span>
+</div>
+<!-- Rubric 5: Technical (WINNER) -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">TECHNICAL RAW</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+</div>
+<span class="text-primary-container font-bold w-12 text-right">99.0</span>
+</div>
+<!-- Rubric 6: Originality -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">ORIGINALITY</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+</div>
+<span class="text-on-surface-variant w-12 text-right">96.5</span>
+</div>
+</div>
+</div>
+<!-- CENTER [VS] COLUMN -->
+<div class="lg:col-span-1 flex flex-col items-center justify-center py-space-md">
+<div class="w-full flex lg:flex-col items-center justify-center gap-space-sm">
+<div class="h-px lg:h-16 w-16 lg:w-px bg-surface-container-highest"></div>
+<div class="w-14 h-14 bg-surface-container-high flex items-center justify-center font-pixel text-headline-md text-primary-container shadow-lg">
+              VS
+            </div>
+<div class="h-px lg:h-16 w-16 lg:w-px bg-surface-container-highest"></div>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase mt-space-sm text-center hidden lg:block">
+            DELTA<br/>+0.8 PTS
+          </span>
+</div>
+<!-- PHOTO B: Aurora Over Reykjanes (Iceland) -->
+<div class="lg:col-span-5 bg-surface-container-low p-space-md flex flex-col justify-between">
+<div class="space-y-space-sm">
+<div class="flex items-center justify-between font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+<span>CONTENDER [B] // LOT #0012</span>
+<span>RUNNER-UP AUDIT</span>
+</div>
+<div class="relative aspect-[16/10] overflow-hidden bg-surface-container-lowest">
+<img alt="Aurora Over Reykjanes" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1WwqiuXaDMbew-vXC2gu47Wo7oExeU_688QB7YdEQcNTSPuaC2elIpAaJJIJSnHqHLRE4tbwalzeiSmKQHL3u5ee8JwDw0ye5HiikxAD2F5JzwfrfAC-FernC05SPP_9Z012lT8fiMM-G-CX0DEnPZWTJr6Ly0ayyBxX5-hjqprb6l9lHAuae5txfNp5hBZzdmt5vSSXXuQUFThQTdd0FYTHYO7M4QLP8WAiLTClBFEsTtifagrGL9Uphk"/>
+<div class="absolute bottom-2 left-2 bg-surface-container-lowest/90 px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-on-surface-variant">
+                ELENA ROSTOVA / ICELAND
+              </div>
+</div>
+<!-- Overall Score B -->
+<div class="flex items-baseline justify-between pt-space-xs">
+<div>
+<h4 class="font-title-sm text-title-sm text-primary uppercase font-bold">AURORA OVER REYKJANES</h4>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant">SENSOR SPREAD: 45.7 MP CMOS</span>
+</div>
+<div class="text-right">
+<span class="font-pixel text-[46px] sm:text-[56px] text-primary leading-none">98.3</span>
+</div>
+</div>
+</div>
+<!-- 6-Axis Rubric Breakdown for Contender B -->
+<div class="space-y-space-xs mt-space-md pt-space-sm bg-surface-container p-space-sm">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase pb-1 flex justify-between">
+<span>RUBRIC DIMENSION</span>
+<span>INDEX VALUE</span>
+</div>
+<!-- Rubric 1: Composition -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">COMPOSITION</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-lowest"></div>
+</div>
+<span class="text-on-surface-variant w-12 text-right">96.8</span>
+</div>
+<!-- Rubric 2: Lighting -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">LIGHTING</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-lowest"></div>
+</div>
+<span class="text-on-surface-variant w-12 text-right">97.0</span>
+</div>
+<!-- Rubric 3: Color (WINNER for B) -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">COLOR HARMONY</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+</div>
+<span class="text-primary-container font-bold w-12 text-right">99.7</span>
+</div>
+<!-- Rubric 4: Story -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">STORY CADENCE</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-lowest"></div>
+<div class="flex-1 bg-surface-container-lowest"></div>
+</div>
+<span class="text-on-surface-variant w-12 text-right">93.8</span>
+</div>
+<!-- Rubric 5: Technical -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">TECHNICAL RAW</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+<div class="flex-1 bg-surface-container-lowest"></div>
+</div>
+<span class="text-on-surface-variant w-12 text-right">97.9</span>
+</div>
+<!-- Rubric 6: Originality (WINNER for B) -->
+<div class="flex items-center justify-between gap-space-sm text-body-sm font-body-sm">
+<span class="w-28 text-on-surface-variant uppercase">ORIGINALITY</span>
+<div class="flex-1 flex gap-1 h-3">
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+<div class="flex-1 bg-primary-container"></div>
+</div>
+<span class="text-primary-container font-bold w-12 text-right">98.9</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 04. THE WORLD IN PIXELS (Dot/Pixel Matrix World Map + Hotspot Plaques)     -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl" id="world-map">
+<div class="px-margin-mobile md:px-margin space-y-space-lg">
+<!-- Section Title -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div>
+<div class="font-label-telemetry text-label-telemetry text-primary-container uppercase tracking-widest flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-primary-container inline-block"></span>
+<span>GEODETIC TELEMETRY // GLOBAL CLUSTER</span>
+</div>
+<h2 class="font-pixel text-[28px] sm:text-[38px] md:text-[46px] text-primary uppercase mt-space-xs leading-none">
+            THE WORLD IN PIXELS
+          </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant uppercase tracking-wider mt-space-xs">
+            GEOGRAPHIC SPREAD OF APPRAISED PHOTOGRAPHY &amp; GPS COORD CLUSTERS
+          </p>
+</div>
+<!-- Telemetry Summary Badges -->
+<div class="flex flex-wrap items-center gap-space-sm font-label-telemetry text-label-telemetry uppercase">
+<div class="bg-surface-container-low px-space-md py-space-xs text-on-surface-variant">
+            TOP REGION: <span class="text-primary-container">NORDIC ARCTIC (94.2 AVG)</span>
+</div>
+</div>
+</div>
+<!-- Stylized Pixel/Block World Grid Map Stage -->
+<div class="relative w-full bg-surface p-space-md md:p-space-lg overflow-hidden">
+<!-- Faint Coordinate Grid Overlay Lines (inline SVG, lightweight, under 1KB) -->
+<svg class="absolute inset-0 w-full h-full text-surface-container opacity-40 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="48" id="pixel-geo-grid" patternunits="userSpaceOnUse" width="48">
+<path d="M 48 0 L 0 0 0 48" fill="none" stroke="currentColor" stroke-width="0.75"></path>
+</pattern>
+</defs>
+<rect fill="url(#pixel-geo-grid)" height="100%" width="100%"></rect>
+</svg>
+<!-- World Pixel Clusters Simulated via CSS Square Matrix Layout -->
+<div class="relative w-full h-[340px] md:h-[460px] flex items-center justify-center">
+<!-- Pixel World SVG Graphic -->
+<svg class="w-full h-full max-w-4xl text-surface-container-highest" fill="currentColor" viewbox="0 0 1000 500">
+<!-- North America pixel clusters -->
+<rect height="40" opacity="0.3" width="80" x="140" y="80"></rect>
+<rect height="60" opacity="0.4" width="120" x="120" y="120"></rect>
+<rect height="50" opacity="0.4" width="80" x="180" y="180"></rect>
+<!-- South America -->
+<rect height="90" opacity="0.4" width="60" x="260" y="270"></rect>
+<rect height="80" opacity="0.5" width="40" x="280" y="360"></rect>
+<!-- Europe -->
+<rect height="50" opacity="0.5" width="90" x="470" y="90"></rect>
+<rect height="40" opacity="0.4" width="60" x="490" y="140"></rect>
+<!-- Africa -->
+<rect height="110" opacity="0.35" width="90" x="480" y="190"></rect>
+<rect height="70" opacity="0.35" width="50" x="510" y="300"></rect>
+<!-- Asia -->
+<rect height="70" opacity="0.45" width="190" x="580" y="80"></rect>
+<rect height="70" opacity="0.4" width="150" x="620" y="150"></rect>
+<rect height="50" opacity="0.4" width="80" x="660" y="220"></rect>
+<!-- Japan / East Coast -->
+<rect height="50" opacity="0.6" width="30" x="800" y="150"></rect>
+<!-- Australia -->
+<rect height="60" opacity="0.4" width="90" x="760" y="320"></rect>
+</svg>
+<!-- HOTSPOT PIN 1: HIMALAYAN RANGE (NEPAL) -->
+<div class="absolute top-[38%] left-[68%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer z-10">
+<span class="w-3 h-3 bg-primary-container inline-block shadow-md shadow-primary-container/50 animate-pulse"></span>
+<div class="mt-2 bg-surface-container-lowest p-space-xs font-label-telemetry text-label-telemetry text-on-surface w-48 shadow-xl">
+<div class="text-primary-container uppercase font-bold flex justify-between">
+<span>HIMALAYAN RANGE</span>
+<span>[99.1]</span>
+</div>
+<div class="text-on-surface-variant text-[9px] uppercase">
+                LAT: 27.9881Â° N // 14,200 FT
+              </div>
+</div>
+</div>
+<!-- HOTSPOT PIN 2: PATAGONIA RIDGE (CHILE) -->
+<div class="absolute top-[82%] left-[29%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer z-10">
+<span class="w-3 h-3 bg-primary-container inline-block shadow-md shadow-primary-container/50"></span>
+<div class="mt-2 bg-surface-container-lowest p-space-xs font-label-telemetry text-label-telemetry text-on-surface w-48 shadow-xl">
+<div class="text-primary-container uppercase font-bold flex justify-between">
+<span>PATAGONIA RIDGE</span>
+<span>[98.9]</span>
+</div>
+<div class="text-on-surface-variant text-[9px] uppercase">
+                LAT: 51.2532Â° S // 24MM F/1.8
+              </div>
+</div>
+</div>
+<!-- HOTSPOT PIN 3: SHINJUKU STREETS (TOKYO) -->
+<div class="absolute top-[34%] left-[81%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer z-10">
+<span class="w-3 h-3 bg-primary-container inline-block shadow-md shadow-primary-container/50"></span>
+<div class="mt-2 bg-surface-container-lowest p-space-xs font-label-telemetry text-label-telemetry text-on-surface w-48 shadow-xl">
+<div class="text-primary-container uppercase font-bold flex justify-between">
+<span>SHINJUKU STREETS</span>
+<span>[96.8]</span>
+</div>
+<div class="text-on-surface-variant text-[9px] uppercase">
+                LAT: 35.6938Â° N // 50MM F/1.2
+              </div>
+</div>
+</div>
+<!-- HOTSPOT PIN 4: REYKJANES PENINSULA (ICELAND) -->
+<div class="absolute top-[22%] left-[46%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer z-10 hidden sm:flex">
+<span class="w-2.5 h-2.5 bg-primary-container inline-block"></span>
+<div class="mt-2 bg-surface-container-lowest p-space-xs font-label-telemetry text-label-telemetry text-on-surface w-44 shadow-xl">
+<div class="text-primary-container uppercase font-bold flex justify-between">
+<span>REYKJANES</span>
+<span>[98.3]</span>
+</div>
+<div class="text-on-surface-variant text-[9px] uppercase">
+                AURORA BOREALIS // 15S
+              </div>
+</div>
+</div>
+</div>
+<!-- Telemetry Bottom Panel -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md pt-space-md bg-surface-container-low p-space-md">
+<div class="space-y-1">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">REGIONAL NODES</div>
+<div class="font-pixel text-headline-md text-primary uppercase">114 TERRITORIES</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Active sensor ingest spans 6 continents and 22 sub-zero observatories.</p>
+</div>
+<div class="space-y-1">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">STORAGE BUFFER</div>
+<div class="font-pixel text-headline-md text-primary uppercase">3.8TB UNCOMPRESSED</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Direct sensor DNG and proprietary 14-bit RAW formats preserved.</p>
+</div>
+<div class="space-y-1">
+<div class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">SYNCHRONIZATION</div>
+<div class="font-pixel text-headline-md text-primary-container uppercase">100% LATENCY-LOCKED</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sub-second decentralized jury scoring verification loop.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 05. HOW IT WORKS + LIVE COMPETITIONS                                      -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface py-space-xl" id="competitions">
+<div class="px-margin-mobile md:px-margin space-y-space-xl">
+<!-- Part A: 3-Step Architecture -->
+<div class="space-y-space-md">
+<div class="font-label-telemetry text-label-telemetry text-primary-container uppercase tracking-widest flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-primary-container inline-block"></span>
+<span>PROTOCOL WORKFLOW // 3-PHASE AUDIT</span>
+</div>
+<h2 class="font-pixel text-[28px] sm:text-[38px] md:text-[46px] text-primary uppercase leading-none">
+          HOW IT WORKS
+        </h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md pt-space-xs">
+<!-- Step 1 -->
+<div class="bg-surface-container-low p-space-lg flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div>
+<div class="font-pixel text-headline-lg text-primary-container mb-space-sm">[01]</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase font-bold mb-space-xs">
+                // SUBMIT RAW
+              </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Drag uncompressed TIFF or RAW. Neural parser extracts sensor telemetry, true dynamic range, and eliminates compression bias.
+              </p>
+</div>
+<div class="mt-space-md pt-space-xs font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+              INPUT: .CR3 .ARW .NEF .DNG
+            </div>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container-low p-space-lg flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div>
+<div class="font-pixel text-headline-lg text-primary-container mb-space-sm">[02]</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase font-bold mb-space-xs">
+                // AI JUDGES
+              </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                7-axis rubric appraised in 120 seconds with zero nepotism or social bias. Algorithmic golden ratio and photon distribution analysis.
+              </p>
+</div>
+<div class="mt-space-md pt-space-xs font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+              SPEED: 0.82S MEAN LATENCY
+            </div>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container-low p-space-lg flex flex-col justify-between hover:bg-surface-container transition-colors">
+<div>
+<div class="font-pixel text-headline-lg text-primary-container mb-space-sm">[03]</div>
+<h3 class="font-title-sm text-title-sm text-primary uppercase font-bold mb-space-xs">
+                // CLAIM &amp; WIN
+              </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Instant score certification on global leaderboard and algorithmic prize disbursement to verified creator wallet nodes.
+              </p>
+</div>
+<div class="mt-space-md pt-space-xs font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+              PAYOUT: INSTANT TELEMETRIC DISBURSE
+            </div>
+</div>
+</div>
+</div>
+<!-- Part B: Live Open Competitions -->
+<div class="space-y-space-md pt-space-md">
+<div class="flex flex-col sm:flex-row sm:items-end justify-between gap-space-sm">
+<div>
+<div class="font-label-telemetry text-label-telemetry text-primary-container uppercase tracking-widest flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-primary-container inline-block"></span>
+<span>LIVE ACTIVE BRACKETS</span>
+</div>
+<h3 class="font-pixel text-[24px] sm:text-[32px] text-primary uppercase mt-space-xs leading-none">
+              OPEN PRIZE POOLS
+            </h3>
+</div>
+<span class="font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+            3 TIERS CLOSING IMMINENTLY
+          </span>
+</div>
+<!-- 3 Competition Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Comp 1: Cybernetic Monochrome -->
+<div class="bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="space-y-space-sm">
+<div class="relative w-full aspect-[16/9] overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="High contrast black and white street photography with deep shadows, stark highlights, rain reflections, and geometric urban architecture, crisp award winning look." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbllRo5AkGcmxsvwpPRDr7gxDlpHW3Iwa5UC8Bu5HqZzXeo3vPikAGtQLkgCl0714GaP6qxS9s3SO1ysZsOtu6CF1HuYOoisSxPeBJsOgywje7CiLOtgJxmRMs0HwoznUzzA_aHMDF5vvbHFbD_DYhyqrXakt5aurEuWj_sanS-PvRcNfrBxJ1aUI7QJIgUYIq4bWX_j5qfXy6VIDkzh58AL9le0eUIMlVxBA5j4oURcrs5cMn7NRk"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/90 px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+                  DEADLINE: 04D 18H 22M
+                </div>
+</div>
+<div class="space-y-space-xs p-space-xs">
+<div class="flex items-center justify-between font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+<span>BRACKET #01</span>
+<span>CAPACITY: 842/1000</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-primary uppercase font-bold">CYBERNETIC MONOCHROME</h4>
+<div class="flex items-baseline justify-between pt-space-xs">
+<span class="font-body-sm text-body-sm text-on-surface-variant uppercase">PRIZE POOL</span>
+<span class="font-score-display text-headline-md text-primary-container font-bold">$15,000 USD</span>
+</div>
+<!-- Fill progress bar -->
+<div class="w-full bg-surface-container-highest h-1.5 mt-space-xs">
+<div class="bg-primary-container h-full w-[84%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md p-space-xs">
+<button class="w-full bg-surface-container-high text-primary hover:bg-primary-container hover:text-on-primary-fixed font-label-telemetry text-label-telemetry font-bold py-space-sm uppercase transition-colors text-center" type="button">
+                {ENTER COMPETITION}
+              </button>
+</div>
+</div>
+<!-- Comp 2: Urban Vertigo 2025 -->
+<div class="bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="space-y-space-sm">
+<div class="relative w-full aspect-[16/9] overflow-hidden bg-surface-container-lowest">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Dizzying top-down urban drone photography of modern skyscrapers and crosswalk intersections at night, ultra sharp architectural symmetry, moody ambient city illumination." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqNCI-CqBlspK0tc--MA3c8fPWhBDd2lIQdPg-8hLgBYrj1QttveHIFZIFny46D6nMyqKGdKEGs15zZkukRT66JveczJYXLIRpFOimkSWHczI9gRqHa7Y1uZmH9hALU9RpE_h8QErlAPtAUnB7i6UKqP95hGpZTfDZoFBV2rmaRP9I2Esa_SUFayeiPqdGLaXaU5bvKhWkJq6zD62g8q108spV0W6GAIPH-hY55R-kDevJ2Z3t56a7"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/90 px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+                  DEADLINE: 01D 06H 40M
+                </div>
+</div>
+<div class="space-y-space-xs p-space-xs">
+<div class="flex items-center justify-between font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+<span>BRACKET #02</span>
+<span class="text-primary-container">CAPACITY: 1,390/1500</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-primary uppercase font-bold">URBAN VERTIGO 2025</h4>
+<div class="flex items-baseline justify-between pt-space-xs">
+<span class="font-body-sm text-body-sm text-on-surface-variant uppercase">PRIZE POOL</span>
+<span class="font-score-display text-headline-md text-primary-container font-bold">$25,000 USD</span>
+</div>
+<!-- Fill progress bar -->
+<div class="w-full bg-surface-container-highest h-1.5 mt-space-xs">
+<div class="bg-primary-container h-full w-[92%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md p-space-xs">
+<button class="w-full bg-primary-container text-on-primary-fixed hover:bg-surface-container-high hover:text-primary-container font-label-telemetry text-label-telemetry font-bold py-space-sm uppercase transition-colors text-center shadow-lg" type="button">
+                {ENTER COMPETITION}
+              </button>
+</div>
+</div>
+<!-- Comp 3: Solar Flare & Astro -->
+<div class="bg-surface-container-low p-space-sm flex flex-col justify-between group hover:bg-surface-container transition-all">
+<div class="space-y-space-sm">
+<div class="relative w-full aspect-[16/9] overflow-hidden bg-surface-container-lowest">
+<img alt="Solar Flare and Astro" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfry1mYixbAzGbs0RcFcdzlsuPkk3J2Fd59_DLxXAqHmjXVBwO_dGhxb3p4AZV6CsrKQN4m-r6njGLtxlk9t2tnXiMz0VDX0Vjr1lgXLvWkKZsr0SZaiAJiCEgYdeaXFbfomuLp-N9nA7Q-j_bh13OOQATXd_9zl8TWWJK0K1mPASEmyMaAm5fQfFSsYDQT7kuJ-Th97Un7A8dyoRGTUfO-1KK2jQQXjw5ZyXSLG9djJeF80EfgELp"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/90 px-space-xs py-0.5 font-label-telemetry text-label-telemetry text-primary-container">
+                  DEADLINE: 09D 12H 15M
+                </div>
+</div>
+<div class="space-y-space-xs p-space-xs">
+<div class="flex items-center justify-between font-label-telemetry text-label-telemetry text-on-surface-variant uppercase">
+<span>BRACKET #03</span>
+<span>CAPACITY: 412/500</span>
+</div>
+<h4 class="font-title-sm text-title-sm text-primary uppercase font-bold">SOLAR FLARE &amp; ASTRO</h4>
+<div class="flex items-baseline justify-between pt-space-xs">
+<span class="font-body-sm text-body-sm text-on-surface-variant uppercase">PRIZE POOL</span>
+<span class="font-score-display text-headline-md text-primary-container font-bold">$10,000 USD</span>
+</div>
+<!-- Fill progress bar -->
+<div class="w-full bg-surface-container-highest h-1.5 mt-space-xs">
+<div class="bg-primary-container h-full w-[82%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md p-space-xs">
+<button class="w-full bg-surface-container-high text-primary hover:bg-primary-container hover:text-on-primary-fixed font-label-telemetry text-label-telemetry font-bold py-space-sm uppercase transition-colors text-center" type="button">
+                {ENTER COMPETITION}
+              </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 06. FINAL CTA MATRIX + MOTION ANNOTATIONS                                 -->
+<!-- ========================================================================= -->
+<section class="relative w-full bg-surface-container-lowest py-space-xl overflow-hidden">
+<!-- Top hairline indicator strip -->
+<div class="w-full h-px bg-primary-container mb-space-xl"></div>
+<div class="px-margin-mobile md:px-margin flex flex-col items-start justify-between space-y-space-lg">
+<!-- Sub-label -->
+<div class="font-label-telemetry text-label-telemetry text-primary-container tracking-widest uppercase">
+        // JURY GATEWAY 00 // AUTONOMOUS CURATION READY
+      </div>
+<!-- Giant Cropped Text Across Width -->
+<div class="w-full overflow-hidden -ml-2 md:-ml-4">
+<div class="font-pixel text-[54px] sm:text-[90px] md:text-[130px] lg:text-[170px] leading-[0.88] tracking-tight uppercase text-primary whitespace-nowrap opacity-90 select-none">
+          ENTERÂ THEÂ HALL
+        </div>
+</div>
+<!-- CTA Controls & Developer Motion Annotation -->
+<div class="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg pt-space-md">
+<div class="space-y-space-xs max-w-xl">
+<p class="font-body-md text-body-md text-on-surface font-semibold uppercase">
+            No gatekeepers. No follower counts. Zero algorithmic favoritism.
+          </p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Upload your uncompressed digital negative to the neural appraisal cluster. Certified scores broadcast in real time across the global gallery matrix.
+          </p>
+</div>
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md shrink-0">
+<a class="bg-primary-container text-on-primary-fixed font-label-telemetry text-label-telemetry font-bold px-space-xl py-space-lg uppercase hover:bg-surface-container-high hover:text-primary-container transition-all flex items-center justify-center gap-space-sm shadow-xl shadow-primary-container/10" href="#">
+<span>{SUBMIT TO JURY ENGINE}</span>
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</a>
+<a class="bg-surface-container-low text-primary font-label-telemetry text-label-telemetry px-space-lg py-space-lg uppercase hover:bg-surface-container hover:text-primary-container transition-colors text-center" href="#the-hall">
+            [REVISIT EXHIBITION]
+          </a>
+</div>
+</div>
+<!-- Developer Motion Annotations Chip -->
+<div class="w-full pt-space-lg">
+<div class="bg-surface-container-low p-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs font-label-telemetry text-label-telemetry text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="text-primary-container">/*</span>
+<span class="text-on-secondary-container">MOTION SPEC: Pixel-dissolve entrance -&gt; Viewport intersection -&gt; Segmented bar fill-in</span>
+<span class="text-primary-container">*/</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span>ENGINE: GPU ACCELERATED</span>
+<span class="text-primary-container">[SYNCED]</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Client-side filter micro-interaction script -->
+<script>
+    (function() {
+      const buttons = document.querySelectorAll('#genre-filters button');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => {
+            b.className = 'px-space-sm py-space-xs bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors tracking-wider';
+          });
+          btn.className = 'px-space-sm py-space-xs bg-primary-container text-on-primary-fixed font-bold tracking-wider';
+        });
+      });
+    })();
+  </script>
+</div></main><footer class="w-full bg-surface-container-lowest grid-bg"><div class="w-full px-margin-mobile md:px-margin py-space-xl flex flex-col md:flex-row md:items-center justify-between gap-space-lg"><div class="space-y-space-xs"><div class="font-label-telemetry text-label-telemetry text-on-surface-variant tracking-widest flex items-center gap-space-sm"><span class="inline-block w-1.5 h-1.5 bg-primary-container"></span><span>PIXEL PRIZE // AUTONOMOUS PHOTOGRAPHIC CURATION CORE</span></div><p class="font-body-sm text-body-sm text-on-surface-variant">Â© 2025 PIXEL PRIZE FOUNDATION. RECURSIVE ARCHIVAL PROTOCOL ALL RIGHTS RESERVED.</p></div><div class="flex flex-wrap items-center gap-space-lg font-label-telemetry text-label-telemetry"><div class="flex items-center gap-space-xs text-on-surface-variant"><span class="text-primary-container">&gt;</span><span>TELEMETRY: OPTIMAL</span></div><div class="flex items-center gap-space-xs text-on-surface-variant"><span class="text-primary-container">&gt;</span><span>JURY NODES: 64/64 SYNCED</span></div><div class="flex items-center gap-space-xs text-on-surface-variant"><span class="text-primary-container">&gt;</span><span>FPS: 120.0</span></div></div></div></footer></body></html>

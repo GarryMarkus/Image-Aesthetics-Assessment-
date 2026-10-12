@@ -1,0 +1,14 @@
+# Cursor Rules for Pixel Prize
+
+You are building the Pixel Prize photography competition portal with another developer concurrently on GitHub.
+
+CRITICAL INSTRUCTIONS:
+1. ALWAYS read AGENTS.md and docs/README.md before starting work.
+2. STRICT DIRECTORY BOUNDARY:
+   - Frontend work belongs ONLY in frontend/
+   - Backend work belongs ONLY in backend/
+   - Specifications in docs/ are the single source of truth (READ-ONLY contracts).
+3. Do NOT invent database fields or API schemas that deviate from docs/10_database_schema.md and docs/11_api_specification.md.
+4. AI judging must strictly implement the IJudgeAdapter interface in docs/07_model_abstraction_and_migration.md.
+5. Refer to frontend/stitch_screens/ for UI mockups, HTML prototypes, and Tailwind design tokens.
+6. Use TypeScript strict mode everywhere; no 'any'.
