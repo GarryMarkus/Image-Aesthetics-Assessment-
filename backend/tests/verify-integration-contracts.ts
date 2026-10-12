@@ -254,10 +254,10 @@ async function runIntegrationVerification() {
     const evalItem = sandboxData.results[0];
     assert(typeof evalItem.overallScore === 'number', 'overallScore is a number');
     assert(typeof evalItem.themeAdherenceScore === 'number', 'themeAdherenceScore is a number');
-    assert(Boolean(evalItem.attributeScores.composition), 'composition score exists');
+    assert(typeof evalItem.attributeScores.composition === 'number', 'composition score is a number');
     assert(Boolean(evalItem.critique.strengths), 'critique strengths exists');
-    assert(Boolean(evalItem.forensicsSummary.isLikelyAuthenticPhoto), 'forensic status exists');
-    console.log(`  ✅ PASS: Sandbox evaluation completed (Score: ${evalItem.overallScore}, Latency: ${evalItem.latencyMs}ms)`);
+    assert(typeof evalItem.forensicsSummary.isLikelyAuthenticPhoto === 'boolean', 'forensic status exists');
+    console.log(`  ✅ PASS: Sandbox evaluation completed (Score: ${evalItem.overallScore}, Latency: ${evalItem.latencyMs}ms, Model: ${evalItem.modelVersion})`);
 
     console.log('\n=======================================================');
     console.log('🎯 ALL 9 FULLSTACK INTEGRATION CONTRACTS VERIFIED (100% PASS)');

@@ -3,6 +3,7 @@ import { IJudgeAdapter, JudgeRequest, JudgeResult } from './judge.interface.js';
 import { AESTHETIC_EVALUATION_SCHEMA, validateAndNormalizeModelOutput } from './schemas.js';
 import { SYSTEM_PROMPT_IAA_JUDGE_V1, buildRubricPrompt, PROMPT_VERSION } from './prompts.js';
 import { ScoringMath } from './scoring-math.js';
+import { MockJudgeAdapter } from './mock.adapter.js';
 import { logger } from '../logger.js';
 
 export class GeminiJudgeAdapter implements IJudgeAdapter {
@@ -34,29 +35,34 @@ export class GeminiJudgeAdapter implements IJudgeAdapter {
     }
   }
 
-  private async executeWithRetryAndTimeout<T>(operation: () => Promise<T>): Promise<T> {
+  private async executeWithRetryAndTimeout<T>(operation: (modelName: string) => Promise<T>): Promise<{ result: T; usedModel: string }> {
+    const candidateModels = Array.from(new Set([this.modelName, 'gemini-3.5-flash', 'gemini-3.1-flash-lite']));
     let lastError: any;
-    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-      try {
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Gemini API request timed out after ${this.timeoutMs}ms`)), this.timeoutMs)
-        );
-        return await Promise.race([operation(), timeoutPromise]);
-      } catch (err: any) {
-        lastError = err;
-        const isRateLimit = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('RESOURCE_EXHAUSTED');
-        const isServerUnavailable = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('UNAVAILABLE');
-        const isTimeout = err?.message?.includes('timed out');
 
-        if ((isRateLimit || isServerUnavailable || isTimeout) && attempt < this.maxRetries) {
-          const backoffMs = Math.min(10000, 1000 * Math.pow(2, attempt - 1) + Math.random() * 500);
-          logger.warn(
-            `[GeminiJudgeAdapter] Transient failure (attempt ${attempt}/${this.maxRetries}): ${err.message}. Retrying in ${Math.round(backoffMs)}ms...`
+    for (const model of candidateModels) {
+      for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+        try {
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Gemini API request timed out after ${this.timeoutMs}ms`)), this.timeoutMs)
           );
-          await new Promise((resolve) => setTimeout(resolve, backoffMs));
-          continue;
+          const result = await Promise.race([operation(model), timeoutPromise]);
+          return { result, usedModel: model };
+        } catch (err: any) {
+          lastError = err;
+          const isRateLimit = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('RESOURCE_EXHAUSTED');
+          const isServerUnavailable = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('UNAVAILABLE');
+          const isTimeout = err?.message?.includes('timed out');
+
+          if ((isRateLimit || isServerUnavailable || isTimeout) && attempt < this.maxRetries) {
+            const backoffMs = 700 * attempt;
+            logger.warn(
+              `[GeminiJudgeAdapter] Transient failure on model ${model} (attempt ${attempt}/${this.maxRetries}): ${err.message}. Retrying in ${backoffMs}ms...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, backoffMs));
+            continue;
+          }
+          break; // Try next model candidate
         }
-        throw err;
       }
     }
     throw lastError;
@@ -67,9 +73,9 @@ export class GeminiJudgeAdapter implements IJudgeAdapter {
     const promptText = buildRubricPrompt(request);
 
     try {
-      const response = await this.executeWithRetryAndTimeout(async () => {
+      const { result: response, usedModel } = await this.executeWithRetryAndTimeout(async (activeModel) => {
         return this.ai.models.generateContent({
-          model: this.modelName,
+          model: activeModel,
           config: {
             systemInstruction: SYSTEM_PROMPT_IAA_JUDGE_V1,
             temperature: request.options?.temperature ?? 0.2,
@@ -105,7 +111,7 @@ export class GeminiJudgeAdapter implements IJudgeAdapter {
 
       return {
         provider: 'gemini',
-        modelVersion: `${this.modelName}::${PROMPT_VERSION}`,
+        modelVersion: `${usedModel}::${PROMPT_VERSION}`,
         latencyMs,
         overallScore: computedOverall,
         themeAdherenceScore: parsed.themeAdherenceScore ?? 100,
