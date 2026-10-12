@@ -5,6 +5,18 @@ import { submissionController } from '../controllers/submission.controller.js';
 import { jurorController } from '../controllers/juror.controller.js';
 import { appealController } from '../controllers/appeal.controller.js';
 import { authenticate, optionalAuthenticate, requireRole } from '../middleware/auth.middleware.js';
+import { validateBody } from '../middleware/validate.middleware.js';
+import {
+  registerSchema,
+  loginSchema,
+  createCompetitionSchema,
+  updateCompetitionStatusSchema,
+  presignedUrlRequestSchema,
+  confirmSubmissionSchema,
+  submitVerdictSchema,
+  fileAppealSchema,
+  resolveAppealSchema,
+} from '../schemas/api.schemas.js';
 import { Role } from '../types/index.js';
 
 export const apiRouter = Router();
@@ -24,31 +36,47 @@ apiRouter.get('/health', (_req, res) => {
 // 1. Auth Endpoints
 // -----------------------------------------------------------------------------
 const authRouter = Router();
-authRouter.post('/register', (req, res, next) => authController.register(req, res).catch(next));
-authRouter.post('/login', (req, res, next) => authController.login(req, res).catch(next));
-authRouter.get('/me', authenticate, (req, res, next) => authController.getMe(req, res).catch(next));
+authRouter.post('/register', validateBody(registerSchema), (req, res, next) =>
+  authController.register(req, res).catch(next)
+);
+authRouter.post('/login', validateBody(loginSchema), (req, res, next) =>
+  authController.login(req, res).catch(next)
+);
+authRouter.get('/me', authenticate, (req, res, next) =>
+  authController.getMe(req, res).catch(next)
+);
 apiRouter.use('/auth', authRouter);
 
 // -----------------------------------------------------------------------------
 // 2. Competition Endpoints
 // -----------------------------------------------------------------------------
 const compRouter = Router();
-compRouter.get('/', (req, res, next) => competitionController.list(req, res).catch(next));
+compRouter.get('/', (req, res, next) =>
+  competitionController.list(req, res).catch(next)
+);
 compRouter.post(
   '/',
   authenticate,
   requireRole(Role.ORGANIZER, Role.ADMIN),
+  validateBody(createCompetitionSchema),
   (req, res, next) => competitionController.create(req, res).catch(next)
 );
-compRouter.get('/:id', (req, res, next) => competitionController.getById(req, res).catch(next));
+compRouter.get('/:id', (req, res, next) =>
+  competitionController.getById(req, res).catch(next)
+);
 compRouter.patch(
   '/:id/status',
   authenticate,
   requireRole(Role.ORGANIZER, Role.ADMIN),
+  validateBody(updateCompetitionStatusSchema),
   (req, res, next) => competitionController.updateStatus(req, res).catch(next)
 );
-compRouter.get('/:id/leaderboard', (req, res, next) => competitionController.getLeaderboard(req, res).catch(next));
-compRouter.get('/:id/gallery', (req, res, next) => competitionController.getGallery(req, res).catch(next));
+compRouter.get('/:id/leaderboard', (req, res, next) =>
+  competitionController.getLeaderboard(req, res).catch(next)
+);
+compRouter.get('/:id/gallery', (req, res, next) =>
+  competitionController.getGallery(req, res).catch(next)
+);
 apiRouter.use('/competitions', compRouter);
 
 // -----------------------------------------------------------------------------
@@ -58,14 +86,18 @@ const subRouter = Router();
 subRouter.post(
   '/presigned-url',
   authenticate,
+  validateBody(presignedUrlRequestSchema),
   (req, res, next) => submissionController.requestPresignedUrl(req, res).catch(next)
 );
 subRouter.post(
   '/',
   authenticate,
+  validateBody(confirmSubmissionSchema),
   (req, res, next) => submissionController.confirm(req, res).catch(next)
 );
-subRouter.get('/:id', (req, res, next) => submissionController.getById(req, res).catch(next));
+subRouter.get('/:id', (req, res, next) =>
+  submissionController.getById(req, res).catch(next)
+);
 subRouter.get(
   '/:id/scorecard',
   optionalAuthenticate,
@@ -92,6 +124,7 @@ jurorRouter.post(
   '/competitions/:id/verdict',
   authenticate,
   requireRole(Role.JUROR, Role.ADMIN),
+  validateBody(submitVerdictSchema),
   (req, res, next) => jurorController.submitVerdict(req, res).catch(next)
 );
 jurorRouter.post(
@@ -109,12 +142,14 @@ const appealRouter = Router();
 appealRouter.post(
   '/',
   authenticate,
+  validateBody(fileAppealSchema),
   (req, res, next) => appealController.fileAppeal(req, res).catch(next)
 );
 appealRouter.patch(
   '/:id',
   authenticate,
   requireRole(Role.ORGANIZER, Role.ADMIN),
+  validateBody(resolveAppealSchema),
   (req, res, next) => appealController.resolveAppeal(req, res).catch(next)
 );
 apiRouter.use('/appeals', appealRouter);

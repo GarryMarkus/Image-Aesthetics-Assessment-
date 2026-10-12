@@ -1,5 +1,10 @@
+process.env.NODE_ENV = 'test';
+
+import { AddressInfo } from 'net';
+import jwt from 'jsonwebtoken';
 import sharp from 'sharp';
 import { env } from '../src/config/env.js';
+import { app } from '../src/server.js';
 import { AppError, BadRequestError, NotFoundError, ForbiddenError, QuotaExceededError, ForensicViolationError } from '../src/lib/errors.js';
 import { logger } from '../src/lib/logger.js';
 import { Role, CompetitionStatus, SubmissionStatus, PodiumRank, AppealStatus, RubricWeights } from '../src/types/index.js';
@@ -717,6 +722,134 @@ async function runBackendVerification() {
     mockBlindLeaderboard.officialTrack.length > 0 && mockBlindLeaderboard.communityTrack.length > 0,
     'Dual tracks (Official AI Track & Community Track) properly separated'
   );
+
+  // ---------------------------------------------------------------------------
+  // Test 7: HTTP REST API & Route Controllers (Layer 7)
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Testing Layer 7: HTTP REST API & Route Controllers ---');
+
+  const httpServer = app.listen(0);
+  const address = httpServer.address() as AddressInfo;
+  const baseUrl = `http://127.0.0.1:${address.port}`;
+
+  // 1. Health check & security headers
+  const healthRes = await fetch(`${baseUrl}/api/health`);
+  assert(healthRes.status === 200, 'Health check returns HTTP 200 OK');
+  const healthBody = (await healthRes.json()) as any;
+  assert(healthBody.status === 'healthy', 'Health check reports status healthy');
+  assert(healthBody.service === 'pixel-prize-backend', 'Health check service identifier matches pixel-prize-backend');
+  assert(Boolean(healthBody.timestamp), 'Health check includes ISO timestamp');
+
+  assert(
+    healthRes.headers.get('x-content-type-options') === 'nosniff',
+    'Helmet sets X-Content-Type-Options: nosniff'
+  );
+  assert(
+    healthRes.headers.get('cross-origin-resource-policy') === 'cross-origin',
+    'Cross-Origin-Resource-Policy configured for media assets'
+  );
+
+  // 2. Authentication middleware & RFC 7807 401 Unauthorized
+  const noAuthRes = await fetch(`${baseUrl}/api/auth/me`);
+  assert(noAuthRes.status === 401, 'Protected endpoint rejects missing token with HTTP 401');
+  const noAuthBody = (await noAuthRes.json()) as any;
+  assert(noAuthBody.code === 'UNAUTHORIZED', 'Error payload carries UNAUTHORIZED problem code');
+  assert(noAuthBody.type === 'https://pixelprize.org/errors/unauthorized', 'RFC 7807 problem details URI matches specification');
+
+  const badTokenRes = await fetch(`${baseUrl}/api/auth/me`, {
+    headers: { Authorization: 'Bearer invalid.token.payload' },
+  });
+  assert(badTokenRes.status === 401, 'Rejects invalid bearer token with HTTP 401');
+
+  // 3. Role-Based Access Control (RBAC) & RFC 7807 403 Forbidden
+  const participantJwt = jwt.sign(
+    { id: 'usr_part_1', email: 'participant@pixelprize.org', role: Role.PARTICIPANT },
+    env.AUTH_SECRET,
+    { expiresIn: '1h' }
+  );
+
+  const jurorAccessWithParticipantToken = await fetch(`${baseUrl}/api/juror/competitions/comp_1/shortlist`, {
+    headers: { Authorization: `Bearer ${participantJwt}` },
+  });
+  assert(
+    jurorAccessWithParticipantToken.status === 403,
+    'Participant role forbidden from accessing juror shortlist endpoint (HTTP 403)'
+  );
+  const forbiddenBody = (await jurorAccessWithParticipantToken.json()) as any;
+  assert(forbiddenBody.code === 'FORBIDDEN', 'Carries FORBIDDEN RFC 7807 problem code');
+
+  const organizerAccessWithParticipantToken = await fetch(`${baseUrl}/api/competitions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${participantJwt}`,
+    },
+    body: JSON.stringify({}),
+  });
+  assert(
+    organizerAccessWithParticipantToken.status === 403,
+    'Participant role forbidden from creating competitions (HTTP 403)'
+  );
+
+  // 4. Request Validation (Zod Schema Middleware - RFC 7807 422 Unprocessable Entity)
+  const badRegisterRes = await fetch(`${baseUrl}/api/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'not-an-email' }), // Missing username, password, name
+  });
+  assert(badRegisterRes.status === 422, 'Zod validation middleware rejects invalid body with HTTP 422');
+  const badRegisterBody = (await badRegisterRes.json()) as any;
+  assert(badRegisterBody.code === 'VALIDATION_FAILED', 'Validation error returns VALIDATION_FAILED code');
+  assert(Boolean(badRegisterBody.errors), 'Problem details includes detailed field error map');
+
+  const badLoginRes = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'valid@photo.org' }), // Missing password
+  });
+  assert(badLoginRes.status === 422, 'Rejects login request missing password with HTTP 422');
+
+  const badPresignedRes = await fetch(`${baseUrl}/api/submissions/presigned-url`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${participantJwt}`,
+    },
+    body: JSON.stringify({ competitionId: 'comp_1' }), // Missing filename, fileSizeBytes, mimeType
+  });
+  assert(badPresignedRes.status === 422, 'Rejects presigned URL request missing file metadata with HTTP 422');
+
+  const jurorJwt = jwt.sign(
+    { id: 'juror_1', email: 'juror@pixelprize.org', role: Role.JUROR },
+    env.AUTH_SECRET,
+    { expiresIn: '1h' }
+  );
+
+  const badVerdictRes = await fetch(`${baseUrl}/api/juror/competitions/comp_1/verdict`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${jurorJwt}`,
+    },
+    body: JSON.stringify({ podiums: [] }), // Empty array fails min(1) validation!
+  });
+  assert(badVerdictRes.status === 422, 'Rejects empty juror podium verdict with HTTP 422 validation failure');
+
+  const badAppealRes = await fetch(`${baseUrl}/api/appeals`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${participantJwt}`,
+    },
+    body: JSON.stringify({ submissionId: 'sub_1', reason: 'bad' }), // Too short (< 5 chars)
+  });
+  assert(badAppealRes.status === 422, 'Rejects appeal with reason shorter than 5 chars with HTTP 422');
+
+  // 5. Ephemeral HTTP server teardown
+  await new Promise<void>((resolve, reject) => {
+    httpServer.close((err) => (err ? reject(err) : resolve()));
+  });
+  assert(true, 'Ephemeral HTTP server closed cleanly');
 
   // ---------------------------------------------------------------------------
   // Summary

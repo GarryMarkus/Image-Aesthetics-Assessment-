@@ -49,6 +49,7 @@ export class CompetitionController {
       throw new BadRequestError('Target status is required');
     }
 
+    const previous = await competitionService.getCompetitionById(id);
     const updated = await competitionService.transitionState(id, status as CompetitionStatus);
 
     // If moving to SHORTLISTED, automatically generate shortlist
@@ -56,7 +57,13 @@ export class CompetitionController {
       await shortlistService.generateShortlist(id);
     }
 
-    res.json(updated);
+    res.json({
+      id: updated.id,
+      previousStatus: previous.status,
+      newStatus: updated.status,
+      updatedAt: updated.updatedAt,
+      competition: updated,
+    });
   }
 
   async getLeaderboard(req: Request, res: Response) {

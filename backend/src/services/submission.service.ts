@@ -246,7 +246,7 @@ export class SubmissionService {
 
     if (existing) {
       // Toggle / remove vote
-      await prisma.$transaction([
+      const [, updated] = await prisma.$transaction([
         prisma.communityVote.delete({
           where: { id: existing.id },
         }),
@@ -255,10 +255,10 @@ export class SubmissionService {
           data: { communityVotesCount: { decrement: 1 } },
         }),
       ]);
-      return { hasVoted: false };
+      return { submissionId, hasVoted: false, newVoteCount: updated.communityVotesCount };
     }
 
-    await prisma.$transaction([
+    const [, updated] = await prisma.$transaction([
       prisma.communityVote.create({
         data: { submissionId, userId },
       }),
@@ -268,7 +268,7 @@ export class SubmissionService {
       }),
     ]);
 
-    return { hasVoted: true };
+    return { submissionId, hasVoted: true, newVoteCount: updated.communityVotesCount };
   }
 }
 

@@ -44,11 +44,16 @@ export async function startServer() {
 }
 
 // Start server when executed directly
-if (process.env.NODE_ENV !== 'test') {
+const isDirectExecution =
+  Boolean(process.argv[1]) &&
+  (process.argv[1].endsWith('server.ts') || process.argv[1].endsWith('server.js'));
+
+if (isDirectExecution && process.env.NODE_ENV !== 'test') {
   startServer().catch((err) => {
     logger.error('Failed to start server:', err);
     process.exit(1);
   });
 }
 
+export { app };
 export default app;
