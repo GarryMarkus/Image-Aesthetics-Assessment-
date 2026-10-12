@@ -45,6 +45,9 @@ dist/
 .cache/
 .eslintcache
 
+# TypeScript incremental build info (generated, never commit)
+*.tsbuildinfo
+
 # ------------------------------------------------------------------------------
 # 4. Python & AI / Computer Vision Artifacts
 # ------------------------------------------------------------------------------
