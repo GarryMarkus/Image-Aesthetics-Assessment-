@@ -1,0 +1,251 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  PARTICIPANT
+  ORGANIZER
+  JUROR
+  ADMIN
+}
+
+enum CompetitionStatus {
+  DRAFT
+  OPEN
+  JUDGING
+  SHORTLISTED
+  RESULTS_PUBLISHED
+  ARCHIVED
+}
+
+enum SubmissionStatus {
+  IN_QUEUE
+  SCORED
+  SHORTLISTED
+  FLAGGED_DISQUALIFIED
+  WITHDRAWN
+}
+
+enum PodiumRank {
+  FIRST_PLACE
+  SECOND_PLACE
+  THIRD_PLACE
+  HONORABLE_MENTION
+}
+
+enum AppealStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id               String            @id @default(cuid())
+  email            String            @unique
+  username         String            @unique
+  passwordHash     String?
+  name             String
+  avatarUrl        String?
+  bio              String?
+  role             Role              @default(PARTICIPANT)
+  lifetimeWins     Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  competitions     Competition[]     @relation("OrganizerCompetitions")
+  submissions      Submission[]
+  jurorVerdicts    JurorVerdict[]
+  votes            CommunityVote[]
+  appeals          AppealTicket[]
+  jurorAssignments JurorAssignment[]
+
+  @@index([role])
+}
+
+model Competition {
+  id                  String               @id @default(cuid())
+  organizerId         String
+  title               String
+  slug                String               @unique
+  description         String               @db.Text
+  bannerUrl           String
+  status              CompetitionStatus    @default(DRAFT)
+  submissionStartDate DateTime
+  submissionEndDate   DateTime
+  resultsPublishDate  DateTime
+  maxEntriesPerUser   Int                  @default(2)
+  requireExif         Boolean              @default(true)
+  prizeSummary        String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  organizer           User                 @relation("OrganizerCompetitions", fields: [organizerId], references: [id])
+  categories          CompetitionCategory[]
+  submissions         Submission[]
+  jurorAssignments    JurorAssignment[]
+  jurorVerdicts       JurorVerdict[]
+
+  @@index([status, submissionEndDate])
+}
+
+model JurorAssignment {
+  id            String      @id @default(cuid())
+  competitionId String
+  jurorId       String
+
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  juror         User        @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, jurorId])
+}
+
+model CompetitionCategory {
+  id            String       @id @default(cuid())
+  competitionId String
+  code          String
+  name          String
+  description   String       @db.Text
+  rubricWeights Json
+
+  competition   Competition  @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  submissions   Submission[]
+
+  @@unique([competitionId, code])
+}
+
+model Submission {
+  id                     String              @id @default(cuid())
+  competitionId          String
+  categoryId             String
+  userId                 String
+  title                  String
+  story                  String?             @db.Text
+  status                 SubmissionStatus    @default(IN_QUEUE)
+  totalScore             Float?
+  categoryRank           Int?
+  communityVotesCount    Int                 @default(0)
+  dHash                  String
+  disqualificationReason String?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  competition            Competition         @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  category               CompetitionCategory @relation(fields: [categoryId], references: [id])
+  user                   User                @relation(fields: [userId], references: [id])
+  imageResource          ImageResource?
+  exifMetadata           ExifMetadata?
+  aestheticScore         AestheticScore?
+  jurorVerdict           JurorVerdict?
+  appealTicket           AppealTicket?
+  votes                  CommunityVote[]
+
+  @@index([competitionId, status, totalScore(sort: Desc)])
+  @@index([userId, competitionId])
+  @@index([dHash])
+}
+
+model ImageResource {
+  id            String     @id @default(cuid())
+  submissionId  String     @unique
+  originalUrl   String
+  webUrl        String
+  thumbUrl      String
+  aiNormalUrl   String
+  width         Int
+  height        Int
+  fileSizeBytes Int
+  mimeType      String
+
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model ExifMetadata {
+  id           String     @id @default(cuid())
+  submissionId String     @unique
+  cameraMake   String?
+  cameraModel  String?
+  lensModel    String?
+  focalLength  Float?
+  aperture     Float?
+  shutterSpeed String?
+  iso          Int?
+  captureTime  DateTime?
+  software     String?
+
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
+model AestheticScore {
+  id                       String     @id @default(cuid())
+  submissionId             String     @unique
+  overallScore             Float
+  themeAdherenceScore      Float
+  compositionScore         Float
+  lightingScore            Float
+  colorHarmonyScore        Float
+  technicalScore           Float
+  subjectStoryScore        Float
+  originalityScore         Float
+  emotionScore             Float
+  gestaltScore             Float
+  detectedCompositionRules Json
+  defectPenaltyPoints      Float      @default(0)
+  defectDetails            Json
+  critiqueStrengths        String     @db.Text
+  critiqueTechnical        String     @db.Text
+  critiqueRecommendations  String     @db.Text
+  syntheticLikelihood      Float
+  modelProvider            String
+  numPasses                Int        @default(1)
+  createdAt                DateTime   @default(now())
+
+  submission               Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([overallScore(sort: Desc)])
+}
+
+model JurorVerdict {
+  id            String      @id @default(cuid())
+  competitionId String
+  submissionId  String      @unique
+  jurorId       String
+  podiumRank    PodiumRank
+  jurorRemarks  String?     @db.Text
+  createdAt     DateTime    @default(now())
+
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  submission    Submission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  juror         User        @relation(fields: [jurorId], references: [id])
+}
+
+model CommunityVote {
+  id           String     @id @default(cuid())
+  submissionId String
+  userId       String
+  createdAt    DateTime   @default(now())
+
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([submissionId, userId])
+}
+
+model AppealTicket {
+  id           String       @id @default(cuid())
+  submissionId String       @unique
+  userId       String
+  status       AppealStatus @default(PENDING)
+  reason       String       @db.Text
+  rawProofUrl  String?
+  adminRemarks String?      @db.Text
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  submission   Submission   @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id])
+}

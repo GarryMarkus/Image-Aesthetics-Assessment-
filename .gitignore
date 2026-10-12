@@ -86,9 +86,13 @@ wandb/
 *.sqlite
 *.sqlite3
 *.db
+*.db-journal
+*.db-wal
 local_storage/
+uploads/
 uploads_temp/
 *.log
+*.tsbuildinfo
 
 # ------------------------------------------------------------------------------
 # 6. Operating System & Editor Files

@@ -1,0 +1,201 @@
+import { prisma } from '../db/prisma.js';
+import { PodiumRank, SubmissionStatus, CompetitionStatus } from '../types/index.js';
+import { NotFoundError, ForbiddenError, BadRequestError } from '../lib/errors.js';
+import { logger } from '../lib/logger.js';
+
+export interface PodiumAllocation {
+  submissionId: string;
+  podiumRank: PodiumRank;
+  jurorRemarks?: string;
+}
+
+export class JurorService {
+  /**
+   * Get the Top 10 shortlisted entries for a juror
+   */
+  async getShortlistForJuror(competitionId: string, jurorId: string) {
+    // 1. Verify juror is assigned to this competition
+    const assignment = await prisma.jurorAssignment.findUnique({
+      where: {
+        competitionId_jurorId: { competitionId, jurorId },
+      },
+    });
+
+    const isOrganizer = await prisma.competition.findFirst({
+      where: { id: competitionId, organizerId: jurorId },
+    });
+
+    if (!assignment && !isOrganizer) {
+      throw new ForbiddenError('User is not an appointed juror or organizer for this competition');
+    }
+
+    // 2. Fetch all shortlisted entries with assets and scores
+    const entries = await prisma.submission.findMany({
+      where: {
+        competitionId,
+        status: { in: [SubmissionStatus.SHORTLISTED, SubmissionStatus.SCORED] },
+      },
+      orderBy: { totalScore: 'desc' },
+      include: {
+        category: true,
+        imageResource: true,
+        exifMetadata: true,
+        aestheticScore: true,
+        jurorVerdict: true,
+      },
+    });
+
+    return {
+      competitionId,
+      shortlistedCount: entries.length,
+      entries: entries.map((e) => ({
+        submissionId: e.id,
+        category: e.category.name,
+        categoryCode: e.category.code,
+        title: e.title,
+        story: e.story,
+        aiOverallScore: e.totalScore,
+        categoryRank: e.categoryRank,
+        images: {
+          originalUrl: e.imageResource?.originalUrl,
+          webUrl: e.imageResource?.webUrl,
+          thumbUrl: e.imageResource?.thumbUrl,
+        },
+        exif: e.exifMetadata
+          ? {
+              camera: `${e.exifMetadata.cameraMake || ''} ${e.exifMetadata.cameraModel || ''}`.trim() || undefined,
+              lens: e.exifMetadata.lensModel,
+              exposure: `${e.exifMetadata.shutterSpeed || ''}, f/${e.exifMetadata.aperture || ''}, ISO ${e.exifMetadata.iso || ''}`,
+            }
+          : undefined,
+        aiScorecard: e.aestheticScore
+          ? {
+              overallScore: e.aestheticScore.overallScore,
+              critiqueStrengths: e.aestheticScore.critiqueStrengths,
+              critiqueTechnical: e.aestheticScore.critiqueTechnical,
+            }
+          : undefined,
+        currentVerdict: e.jurorVerdict
+          ? {
+              podiumRank: e.jurorVerdict.podiumRank,
+              jurorRemarks: e.jurorVerdict.jurorRemarks,
+            }
+          : undefined,
+      })),
+    };
+  }
+
+  /**
+   * Validate podium allocations to ensure at least one winner and uniqueness for top 3
+   */
+  static validatePodiums(podiums: PodiumAllocation[]) {
+    if (!podiums || podiums.length === 0) {
+      throw new BadRequestError('At least one podium winner must be selected');
+    }
+    const seenRanks = new Set<string>();
+    for (const p of podiums) {
+      if (p.podiumRank !== PodiumRank.HONORABLE_MENTION) {
+        if (seenRanks.has(p.podiumRank)) {
+          throw new BadRequestError(`Duplicate podium rank detected: ${p.podiumRank}`);
+        }
+        seenRanks.add(p.podiumRank);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Submit juror podium verdicts (1st, 2nd, 3rd, Honorable Mention)
+   */
+  async submitVerdict(competitionId: string, jurorId: string, podiums: PodiumAllocation[]) {
+    JurorService.validatePodiums(podiums);
+
+    const comp = await prisma.competition.findUnique({ where: { id: competitionId } });
+    if (!comp) {
+      throw new NotFoundError('Competition', competitionId);
+    }
+
+    if (comp.status === CompetitionStatus.RESULTS_PUBLISHED || comp.status === CompetitionStatus.ARCHIVED) {
+      throw new BadRequestError(`Cannot submit verdicts when competition is in '${comp.status}' status`);
+    }
+
+    // Insert or update verdicts
+    const results = await prisma.$transaction(
+      podiums.map((p) =>
+        prisma.jurorVerdict.upsert({
+          where: { submissionId: p.submissionId },
+          update: {
+            podiumRank: p.podiumRank,
+            jurorRemarks: p.jurorRemarks,
+            jurorId,
+          },
+          create: {
+            competitionId,
+            submissionId: p.submissionId,
+            jurorId,
+            podiumRank: p.podiumRank,
+            jurorRemarks: p.jurorRemarks,
+          },
+        })
+      )
+    );
+
+    logger.info(
+      `[JurorService] Juror ${jurorId} registered verdicts for ${results.length} submissions in competition ${competitionId}`
+    );
+
+    return {
+      status: 'VERDICT_REGISTERED',
+      competitionId,
+      assignedPodiumsCount: results.length,
+    };
+  }
+
+  /**
+   * Publish final results and unlock public leaderboard
+   */
+  async publishOfficialResults(competitionId: string, organizerId: string) {
+    const comp = await prisma.competition.findFirst({
+      where: { id: competitionId, organizerId },
+    });
+
+    if (!comp) {
+      throw new ForbiddenError('Only the competition organizer can publish official results');
+    }
+
+    // Identify top podium winners (1st, 2nd, 3rd) to increment lifetimeWins
+    const winningVerdicts = await prisma.jurorVerdict.findMany({
+      where: {
+        competitionId,
+        podiumRank: {
+          in: [PodiumRank.FIRST_PLACE, PodiumRank.SECOND_PLACE, PodiumRank.THIRD_PLACE],
+        },
+      },
+      include: {
+        submission: { select: { userId: true } },
+      },
+    });
+
+    const winnerUserIds = Array.from(new Set(winningVerdicts.map((v) => v.submission.userId)));
+
+    const [updated] = await prisma.$transaction([
+      prisma.competition.update({
+        where: { id: competitionId },
+        data: { status: CompetitionStatus.RESULTS_PUBLISHED },
+      }),
+      ...winnerUserIds.map((userId) =>
+        prisma.user.update({
+          where: { id: userId },
+          data: { lifetimeWins: { increment: 1 } },
+        })
+      ),
+    ]);
+
+    logger.info(
+      `[JurorService] Competition ${competitionId} results officially published to the public. Incremented lifetime wins for ${winnerUserIds.length} podium winners.`
+    );
+    return updated;
+  }
+}
+
+export const jurorService = new JurorService();
