@@ -4,6 +4,20 @@ import { AppealStatus, SubmissionStatus } from '../types/index.js';
 import { NotFoundError, BadRequestError, ForbiddenError } from '../lib/errors.js';
 
 export class AppealsService {
+  static validateAppealEligibility(
+    submissionUserId: string,
+    submissionStatus: SubmissionStatus,
+    filingUserId: string
+  ) {
+    if (submissionUserId !== filingUserId) {
+      throw new ForbiddenError('Only the photographer can file an appeal for their submission');
+    }
+
+    if (submissionStatus !== SubmissionStatus.FLAGGED_DISQUALIFIED) {
+      throw new BadRequestError('Only disqualified submissions can be appealed');
+    }
+  }
+
   async fileAppeal(submissionId: string, userId: string, reason: string, rawProofUrl?: string) {
     const submission = await prisma.submission.findUnique({
       where: { id: submissionId },
@@ -13,13 +27,7 @@ export class AppealsService {
       throw new NotFoundError('Submission', submissionId);
     }
 
-    if (submission.userId !== userId) {
-      throw new ForbiddenError('Only the photographer can file an appeal for their submission');
-    }
-
-    if (submission.status !== SubmissionStatus.FLAGGED_DISQUALIFIED) {
-      throw new BadRequestError('Only disqualified submissions can be appealed');
-    }
+    AppealsService.validateAppealEligibility(submission.userId, submission.status, userId);
 
     return prisma.appealTicket.upsert({
       where: { submissionId },

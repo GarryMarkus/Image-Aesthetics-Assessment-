@@ -22,6 +22,37 @@ export interface ConfirmSubmissionInput {
 }
 
 export class SubmissionService {
+  static readonly MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+
+  static validateFileSize(fileSizeBytes: number) {
+    if (fileSizeBytes > SubmissionService.MAX_FILE_SIZE_BYTES) {
+      throw new BadRequestError('File size exceeds the 25 MB maximum limit');
+    }
+  }
+
+  static isScorecardVisible(
+    competitionStatus: CompetitionStatus,
+    submissionUserId: string,
+    requestingUserId?: string
+  ): boolean {
+    if (competitionStatus === CompetitionStatus.RESULTS_PUBLISHED) {
+      return true;
+    }
+    return Boolean(requestingUserId && submissionUserId === requestingUserId);
+  }
+
+  static calculatePercentileRank(
+    lowerScoredCount: number,
+    totalInCategory: number,
+    categoryName: string
+  ): string {
+    const percentile =
+      totalInCategory > 0
+        ? Math.round((lowerScoredCount / totalInCategory) * 100)
+        : 100;
+    return `Top ${Math.max(1, 100 - percentile)}% in ${categoryName}`;
+  }
+
   /**
    * Request direct-to-cloud presigned upload ticket after quota validation
    */
@@ -59,10 +90,7 @@ export class SubmissionService {
     }
 
     // File validation
-    const maxBytes = 25 * 1024 * 1024; // 25 MB
-    if (input.fileSizeBytes > maxBytes) {
-      throw new BadRequestError('File size exceeds the 25 MB maximum limit');
-    }
+    SubmissionService.validateFileSize(input.fileSizeBytes);
 
     const ext = input.filename.split('.').pop() || 'jpg';
     const submissionId = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
@@ -142,12 +170,11 @@ export class SubmissionService {
       throw new BadRequestError('Aesthetic evaluation has not completed yet for this submission');
     }
 
-    // Check privacy: If competition is still in OPEN or JUDGING, only author can view scorecard
+    // Check privacy: If competition is not yet RESULTS_PUBLISHED, only author can view scorecard
     const comp = await prisma.competition.findUnique({ where: { id: submission.competitionId } });
     if (
       comp &&
-      comp.status !== CompetitionStatus.RESULTS_PUBLISHED &&
-      submission.userId !== requestingUserId
+      !SubmissionService.isScorecardVisible(comp.status, submission.userId, requestingUserId)
     ) {
       throw new BadRequestError('Scorecard is private until competition results are officially published');
     }
@@ -168,10 +195,11 @@ export class SubmissionService {
       },
     });
 
-    const percentile =
-      totalInCategory > 0
-        ? Math.round((lowerScoredCount / totalInCategory) * 100)
-        : 100;
+    const percentileRank = SubmissionService.calculatePercentileRank(
+      lowerScoredCount,
+      totalInCategory,
+      submission.category.name
+    );
 
     return {
       submissionId: submission.id,
@@ -202,7 +230,7 @@ export class SubmissionService {
         isLikelyAuthenticPhoto: submission.aestheticScore.syntheticLikelihood < 0.5,
         forensicNotes: 'Forensics scan verified.',
       },
-      percentileRank: `Top ${Math.max(1, 100 - percentile)}% in ${submission.category.name}`,
+      percentileRank,
     };
   }
 

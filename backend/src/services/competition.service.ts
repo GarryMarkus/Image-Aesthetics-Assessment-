@@ -164,21 +164,24 @@ export class CompetitionService {
     return competition;
   }
 
+  static readonly VALID_TRANSITIONS: Record<CompetitionStatus, CompetitionStatus[]> = {
+    [CompetitionStatus.DRAFT]: [CompetitionStatus.OPEN],
+    [CompetitionStatus.OPEN]: [CompetitionStatus.JUDGING],
+    [CompetitionStatus.JUDGING]: [CompetitionStatus.SHORTLISTED],
+    [CompetitionStatus.SHORTLISTED]: [CompetitionStatus.RESULTS_PUBLISHED],
+    [CompetitionStatus.RESULTS_PUBLISHED]: [CompetitionStatus.ARCHIVED],
+    [CompetitionStatus.ARCHIVED]: [],
+  };
+
+  static isValidTransition(currentStatus: CompetitionStatus, targetStatus: CompetitionStatus): boolean {
+    const allowed = CompetitionService.VALID_TRANSITIONS[currentStatus] || [];
+    return allowed.includes(targetStatus);
+  }
+
   async transitionState(competitionId: string, targetStatus: CompetitionStatus) {
     const competition = await this.getCompetitionById(competitionId);
 
-    // Validate lifecycle transitions
-    const validTransitions: Record<CompetitionStatus, CompetitionStatus[]> = {
-      [CompetitionStatus.DRAFT]: [CompetitionStatus.OPEN],
-      [CompetitionStatus.OPEN]: [CompetitionStatus.JUDGING],
-      [CompetitionStatus.JUDGING]: [CompetitionStatus.SHORTLISTED],
-      [CompetitionStatus.SHORTLISTED]: [CompetitionStatus.RESULTS_PUBLISHED],
-      [CompetitionStatus.RESULTS_PUBLISHED]: [CompetitionStatus.ARCHIVED],
-      [CompetitionStatus.ARCHIVED]: [],
-    };
-
-    const allowed = validTransitions[competition.status] || [];
-    if (!allowed.includes(targetStatus)) {
+    if (!CompetitionService.isValidTransition(competition.status, targetStatus)) {
       throw new BadRequestError(
         `Invalid lifecycle transition from ${competition.status} to ${targetStatus}`
       );

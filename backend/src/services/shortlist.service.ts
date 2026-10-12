@@ -1,6 +1,6 @@
 import { prisma } from '../db/prisma.js';
 import { SubmissionStatus, CompetitionStatus } from '../types/index.js';
-import { NotFoundError } from '../lib/errors.js';
+import { NotFoundError, BadRequestError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
 
 export class ShortlistService {
@@ -15,6 +15,15 @@ export class ShortlistService {
 
     if (!competition) {
       throw new NotFoundError('Competition', competitionId);
+    }
+
+    if (
+      competition.status !== CompetitionStatus.JUDGING &&
+      competition.status !== CompetitionStatus.SHORTLISTED
+    ) {
+      throw new BadRequestError(
+        `Cannot generate shortlist for competition in '${competition.status}' status. Competition must be in JUDGING status.`
+      );
     }
 
     const shortlistedSummary: Record<string, number> = {};

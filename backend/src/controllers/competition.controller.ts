@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { competitionService } from '../services/competition.service.js';
 import { shortlistService } from '../services/shortlist.service.js';
+import { leaderboardService } from '../services/leaderboard.service.js';
 import { prisma } from '../db/prisma.js';
 import { CompetitionStatus, SubmissionStatus } from '../types/index.js';
 import { BadRequestError, NotFoundError } from '../lib/errors.js';
@@ -60,82 +61,14 @@ export class CompetitionController {
 
   async getLeaderboard(req: Request, res: Response) {
     const { id } = req.params;
-    const { categoryCode } = req.query;
+    const { categoryCode, limit } = req.query;
 
-    const competition = await competitionService.getCompetitionById(id);
-
-    // Blind judging rule: While OPEN, AI scores are hidden to prevent bandwagon effect
-    const isBlind = competition.status === CompetitionStatus.OPEN || competition.status === CompetitionStatus.JUDGING;
-
-    const where: any = {
-      competitionId: id,
-      status: { in: [SubmissionStatus.SCORED, SubmissionStatus.SHORTLISTED] },
-    };
-
-    if (categoryCode) {
-      where.category = { code: categoryCode };
-    }
-
-    // 1. Official AI & Juror Track
-    const aiLeaderboard = await prisma.submission.findMany({
-      where,
-      orderBy: { totalScore: 'desc' },
-      take: 100,
-      include: {
-        category: true,
-        imageResource: true,
-        jurorVerdict: true,
-        user: isBlind
-          ? undefined
-          : { select: { id: true, name: true, username: true, avatarUrl: true } },
-      },
+    const result = await leaderboardService.getLeaderboard(id, {
+      categoryCode: categoryCode as string | undefined,
+      limit: limit ? Number(limit) : undefined,
     });
 
-    // 2. Community Upvote Track
-    const communityLeaderboard = await prisma.submission.findMany({
-      where: {
-        competitionId: id,
-        status: { not: SubmissionStatus.FLAGGED_DISQUALIFIED },
-      },
-      orderBy: { communityVotesCount: 'desc' },
-      take: 50,
-      include: {
-        category: true,
-        imageResource: true,
-        user: isBlind
-          ? undefined
-          : { select: { id: true, name: true, username: true, avatarUrl: true } },
-      },
-    });
-
-    res.json({
-      competition: {
-        id: competition.id,
-        title: competition.title,
-        status: competition.status,
-        isBlindEvaluationActive: isBlind,
-      },
-      aiStandings: aiLeaderboard.map((sub, idx) => ({
-        rank: idx + 1,
-        submissionId: sub.id,
-        title: sub.title,
-        category: sub.category.name,
-        totalScore: isBlind ? null : sub.totalScore,
-        thumbUrl: sub.imageResource?.thumbUrl,
-        webUrl: sub.imageResource?.webUrl,
-        author: isBlind ? { name: 'Anonymous Entrant' } : sub.user,
-        podium: sub.jurorVerdict?.podiumRank || null,
-      })),
-      communityStandings: communityLeaderboard.map((sub, idx) => ({
-        rank: idx + 1,
-        submissionId: sub.id,
-        title: sub.title,
-        category: sub.category.name,
-        votes: sub.communityVotesCount,
-        thumbUrl: sub.imageResource?.thumbUrl,
-        author: isBlind ? { name: 'Anonymous Entrant' } : sub.user,
-      })),
-    });
+    res.json(result);
   }
 
   async getGallery(req: Request, res: Response) {

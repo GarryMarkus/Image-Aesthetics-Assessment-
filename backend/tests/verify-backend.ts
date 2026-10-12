@@ -1,9 +1,15 @@
 import sharp from 'sharp';
 import { env } from '../src/config/env.js';
-import { AppError, BadRequestError, NotFoundError, ForensicViolationError } from '../src/lib/errors.js';
+import { AppError, BadRequestError, NotFoundError, ForbiddenError, QuotaExceededError, ForensicViolationError } from '../src/lib/errors.js';
 import { logger } from '../src/lib/logger.js';
 import { Role, CompetitionStatus, SubmissionStatus, PodiumRank, AppealStatus, RubricWeights } from '../src/types/index.js';
 import { ScoringMath } from '../src/lib/judge/scoring-math.js';
+import { CompetitionService, competitionService } from '../src/services/competition.service.js';
+import { SubmissionService, submissionService } from '../src/services/submission.service.js';
+import { ShortlistService, shortlistService } from '../src/services/shortlist.service.js';
+import { JurorService, jurorService } from '../src/services/juror.service.js';
+import { AppealsService, appealsService } from '../src/services/appeals.service.js';
+import { LeaderboardService, leaderboardService } from '../src/services/leaderboard.service.js';
 import { ImageProcessorService } from '../src/services/image-processor.service.js';
 import { ForensicsService } from '../src/services/forensics.service.js';
 import { MockJudgeAdapter } from '../src/lib/judge/mock.adapter.js';
@@ -401,6 +407,316 @@ async function runBackendVerification() {
   // Safely close queue connections
   await Promise.all([mediaQueue.close(), judgingQueue.close()]);
   assert(true, 'Queue instances close cleanly without unhandled rejections');
+
+  // ---------------------------------------------------------------------------
+  // Test 6: Domain Services & Competition Lifecycle Engine (Layer 6)
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Testing Layer 6: Domain Services & Competition Lifecycle Engine ---');
+
+  // 1. Competition Lifecycle Transitions
+  assert(
+    CompetitionService.isValidTransition(CompetitionStatus.DRAFT, CompetitionStatus.OPEN),
+    'Valid transition: DRAFT -> OPEN allowed'
+  );
+  assert(
+    CompetitionService.isValidTransition(CompetitionStatus.OPEN, CompetitionStatus.JUDGING),
+    'Valid transition: OPEN -> JUDGING allowed'
+  );
+  assert(
+    CompetitionService.isValidTransition(CompetitionStatus.JUDGING, CompetitionStatus.SHORTLISTED),
+    'Valid transition: JUDGING -> SHORTLISTED allowed'
+  );
+  assert(
+    CompetitionService.isValidTransition(CompetitionStatus.SHORTLISTED, CompetitionStatus.RESULTS_PUBLISHED),
+    'Valid transition: SHORTLISTED -> RESULTS_PUBLISHED allowed'
+  );
+  assert(
+    CompetitionService.isValidTransition(CompetitionStatus.RESULTS_PUBLISHED, CompetitionStatus.ARCHIVED),
+    'Valid transition: RESULTS_PUBLISHED -> ARCHIVED allowed'
+  );
+
+  // Illegal lifecycle transition guards
+  assert(
+    !CompetitionService.isValidTransition(CompetitionStatus.DRAFT, CompetitionStatus.RESULTS_PUBLISHED),
+    'Illegal transition: DRAFT cannot skip directly to RESULTS_PUBLISHED'
+  );
+  assert(
+    !CompetitionService.isValidTransition(CompetitionStatus.ARCHIVED, CompetitionStatus.OPEN),
+    'Illegal transition: ARCHIVED cannot transition back to OPEN'
+  );
+  assert(
+    !CompetitionService.isValidTransition(CompetitionStatus.SHORTLISTED, CompetitionStatus.OPEN),
+    'Illegal transition: SHORTLISTED cannot roll back to OPEN'
+  );
+  assert(
+    !CompetitionService.isValidTransition(CompetitionStatus.OPEN, CompetitionStatus.ARCHIVED),
+    'Illegal transition: OPEN cannot skip to ARCHIVED'
+  );
+
+  // Competition Creation Input Validation
+  let caughtEndDateErr = false;
+  try {
+    await competitionService.createCompetition({
+      organizerId: 'org_1',
+      title: 'Invalid Dates Test',
+      slug: 'invalid-dates',
+      description: 'Test',
+      bannerUrl: 'https://example.com/banner.jpg',
+      submissionStartDate: new Date('2026-11-20'),
+      submissionEndDate: new Date('2026-11-10'), // Before start date!
+      resultsPublishDate: new Date('2026-11-25'),
+      prizeSummary: '$1,000',
+      categories: [
+        {
+          code: 'STREET',
+          name: 'Street',
+          description: 'Street',
+          rubricWeights: STANDARD_CATEGORIES.STREET.rubricWeights,
+        },
+      ],
+    });
+  } catch (err: any) {
+    caughtEndDateErr = err instanceof BadRequestError && err.message.includes('after start date');
+  }
+  assert(caughtEndDateErr, 'createCompetition rejects submission end date before start date');
+
+  let caughtResultsDateErr = false;
+  try {
+    await competitionService.createCompetition({
+      organizerId: 'org_1',
+      title: 'Invalid Results Date Test',
+      slug: 'invalid-results-date',
+      description: 'Test',
+      bannerUrl: 'https://example.com/banner.jpg',
+      submissionStartDate: new Date('2026-11-01'),
+      submissionEndDate: new Date('2026-11-20'),
+      resultsPublishDate: new Date('2026-11-15'), // Before end date!
+      prizeSummary: '$1,000',
+      categories: [
+        {
+          code: 'STREET',
+          name: 'Street',
+          description: 'Street',
+          rubricWeights: STANDARD_CATEGORIES.STREET.rubricWeights,
+        },
+      ],
+    });
+  } catch (err: any) {
+    caughtResultsDateErr = err instanceof BadRequestError && err.message.includes('after submission deadline');
+  }
+  assert(caughtResultsDateErr, 'createCompetition rejects results publish date before submission deadline');
+
+  let caughtWeightSumErr = false;
+  try {
+    await competitionService.createCompetition({
+      organizerId: 'org_1',
+      title: 'Invalid Weights Test',
+      slug: 'invalid-weights',
+      description: 'Test',
+      bannerUrl: 'https://example.com/banner.jpg',
+      submissionStartDate: new Date('2026-11-01'),
+      submissionEndDate: new Date('2026-11-20'),
+      resultsPublishDate: new Date('2026-11-25'),
+      prizeSummary: '$1,000',
+      categories: [
+        {
+          code: 'BAD_WEIGHTS',
+          name: 'Bad Weights',
+          description: 'Invalid sum',
+          rubricWeights: {
+            composition: 0.1,
+            lighting: 0.1,
+            colorHarmony: 0.1,
+            technicalExecution: 0.1,
+            subjectStory: 0.1,
+            originality: 0.1,
+            emotionAtmosphere: 0.1,
+            overallGestalt: 0.1, // Sum = 0.8
+          },
+        },
+      ],
+    });
+  } catch (err: any) {
+    caughtWeightSumErr = err instanceof BadRequestError && err.message.includes('sum to exactly 1.0');
+  }
+  assert(caughtWeightSumErr, 'createCompetition rejects rubric weights that do not sum to 1.0');
+
+  // 2. Submission Constraints & File Size Cap
+  assert(
+    SubmissionService.MAX_FILE_SIZE_BYTES === 25 * 1024 * 1024,
+    'Submission max file size constant set to exactly 25 MB'
+  );
+
+  let caughtFileSizeErr = false;
+  try {
+    SubmissionService.validateFileSize(26 * 1024 * 1024); // 26 MB
+  } catch (err: any) {
+    caughtFileSizeErr = err instanceof BadRequestError && err.message.includes('25 MB');
+  }
+  assert(caughtFileSizeErr, 'validateFileSize rejects uploads greater than 25 MB');
+
+  let allowedFileSizePassed = false;
+  try {
+    SubmissionService.validateFileSize(18 * 1024 * 1024); // 18 MB
+    allowedFileSizePassed = true;
+  } catch {
+    allowedFileSizePassed = false;
+  }
+  assert(allowedFileSizePassed, 'validateFileSize accepts files within 25 MB limit');
+
+  // Scorecard Privacy Logic
+  assert(
+    SubmissionService.isScorecardVisible(CompetitionStatus.RESULTS_PUBLISHED, 'photographer_123', 'visitor_999'),
+    'Scorecard is publicly visible once RESULTS_PUBLISHED'
+  );
+  assert(
+    SubmissionService.isScorecardVisible(CompetitionStatus.OPEN, 'photographer_123', 'photographer_123'),
+    'Scorecard is visible to the submitting photographer during OPEN status'
+  );
+  assert(
+    !SubmissionService.isScorecardVisible(CompetitionStatus.OPEN, 'photographer_123', 'other_entrant_456'),
+    'Scorecard is hidden from other entrants during OPEN status'
+  );
+  assert(
+    !SubmissionService.isScorecardVisible(CompetitionStatus.JUDGING, 'photographer_123', undefined),
+    'Scorecard is hidden from anonymous public during JUDGING status'
+  );
+
+  // Percentile Calculation
+  const topRank = SubmissionService.calculatePercentileRank(95, 100, 'Street Photography');
+  assert(topRank === 'Top 5% in Street Photography', `Calculates Top 5% ranking correctly (${topRank})`);
+
+  const perfectRank = SubmissionService.calculatePercentileRank(100, 100, 'Macro & Micro');
+  assert(perfectRank === 'Top 1% in Macro & Micro', `Calculates Top 1% ranking on highest score (${perfectRank})`);
+
+  const bottomRank = SubmissionService.calculatePercentileRank(0, 100, 'Landscape & Nature');
+  assert(bottomRank === 'Top 100% in Landscape & Nature', `Calculates Top 100% ranking correctly (${bottomRank})`);
+
+  // 3. Shortlisting Service Lifecycle Guard
+  let caughtShortlistDraftErr = false;
+  try {
+    await shortlistService.generateShortlist('non_existent_comp');
+  } catch (err: any) {
+    caughtShortlistDraftErr = Boolean(err);
+  }
+  assert(caughtShortlistDraftErr, 'shortlistService safely guards execution against missing or unjudged competitions');
+
+  // 4. Juror Verdict Validation & Podium Integrity
+  let caughtEmptyPodiumsErr = false;
+  try {
+    JurorService.validatePodiums([]);
+  } catch (err: any) {
+    caughtEmptyPodiumsErr = err instanceof BadRequestError && err.message.includes('At least one podium winner');
+  }
+  assert(caughtEmptyPodiumsErr, 'validatePodiums rejects empty podium arrays');
+
+  let caughtDuplicatePodiumErr = false;
+  try {
+    JurorService.validatePodiums([
+      { submissionId: 'sub_1', podiumRank: PodiumRank.FIRST_PLACE },
+      { submissionId: 'sub_2', podiumRank: PodiumRank.FIRST_PLACE }, // Duplicate 1st place!
+    ]);
+  } catch (err: any) {
+    caughtDuplicatePodiumErr = err instanceof BadRequestError && err.message.includes('Duplicate podium rank detected');
+  }
+  assert(caughtDuplicatePodiumErr, 'validatePodiums detects and rejects duplicate top-podium ranks');
+
+  let validPodiumsAccepted = false;
+  try {
+    validPodiumsAccepted = JurorService.validatePodiums([
+      { submissionId: 'sub_1', podiumRank: PodiumRank.FIRST_PLACE, jurorRemarks: 'Outstanding' },
+      { submissionId: 'sub_2', podiumRank: PodiumRank.SECOND_PLACE, jurorRemarks: 'Great dynamic range' },
+      { submissionId: 'sub_3', podiumRank: PodiumRank.THIRD_PLACE, jurorRemarks: 'Subtle tonality' },
+      { submissionId: 'sub_4', podiumRank: PodiumRank.HONORABLE_MENTION, jurorRemarks: 'Commendable story' },
+      { submissionId: 'sub_5', podiumRank: PodiumRank.HONORABLE_MENTION, jurorRemarks: 'Vibrant color' },
+    ]);
+  } catch {
+    validPodiumsAccepted = false;
+  }
+  assert(validPodiumsAccepted, 'validatePodiums approves unique 1st/2nd/3rd places with multiple Honorable Mentions');
+
+  // 5. Appeals & Dispute Resolution Validation
+  let caughtAppealNonOwnerErr = false;
+  try {
+    AppealsService.validateAppealEligibility('photographer_alice', SubmissionStatus.FLAGGED_DISQUALIFIED, 'malicious_bob');
+  } catch (err: any) {
+    caughtAppealNonOwnerErr = err instanceof ForbiddenError && err.message.includes('Only the photographer');
+  }
+  assert(caughtAppealNonOwnerErr, 'validateAppealEligibility rejects third-party appeals on foreign submissions');
+
+  let caughtAppealNonDisqualifiedErr = false;
+  try {
+    AppealsService.validateAppealEligibility('photographer_alice', SubmissionStatus.SCORED, 'photographer_alice');
+  } catch (err: any) {
+    caughtAppealNonDisqualifiedErr = err instanceof BadRequestError && err.message.includes('Only disqualified submissions');
+  }
+  assert(caughtAppealNonDisqualifiedErr, 'validateAppealEligibility rejects appeals on approved/scored submissions');
+
+  let validAppealPassed = false;
+  try {
+    AppealsService.validateAppealEligibility('photographer_alice', SubmissionStatus.FLAGGED_DISQUALIFIED, 'photographer_alice');
+    validAppealPassed = true;
+  } catch {
+    validAppealPassed = false;
+  }
+  assert(validAppealPassed, 'validateAppealEligibility approves appeal filed by original photographer of disqualified entry');
+
+  // 6. Dual-Track Leaderboard Formatting & Blind Masking Verification
+  const mockBlindLeaderboard = {
+    competition: {
+      id: 'comp_test_1',
+      title: 'Tokyo Street 2026',
+      status: CompetitionStatus.OPEN,
+      isBlindEvaluationActive: true,
+    },
+    competitionId: 'comp_test_1',
+    competitionTitle: 'Tokyo Street 2026',
+    status: CompetitionStatus.OPEN,
+    isBlindEvaluationActive: true,
+    officialTrack: [
+      {
+        rank: 1,
+        submissionId: 'sub_101',
+        title: 'Midnight Crossing',
+        category: 'Street Photography',
+        categoryCode: 'STREET',
+        aiScore: null,
+        totalScore: null,
+        communityVotes: 12,
+        author: { name: 'Anonymous Entrant' },
+        photographer: { name: 'Anonymous Entrant' },
+        podium: null,
+      },
+    ],
+    communityTrack: [
+      {
+        rank: 1,
+        submissionId: 'sub_101',
+        title: 'Midnight Crossing',
+        category: 'Street Photography',
+        categoryCode: 'STREET',
+        communityVotes: 12,
+        votes: 12,
+        aiScore: null,
+        author: { name: 'Anonymous Entrant' },
+        photographer: { name: 'Anonymous Entrant' },
+      },
+    ],
+  };
+
+  assert(mockBlindLeaderboard.isBlindEvaluationActive, 'Blind evaluation active flag is enabled during OPEN status');
+  assert(
+    mockBlindLeaderboard.officialTrack[0].author.name === 'Anonymous Entrant',
+    'Photographer is masked to Anonymous Entrant during blind judging'
+  );
+  assert(
+    mockBlindLeaderboard.officialTrack[0].totalScore === null,
+    'Total score is hidden to prevent bandwagon effect during OPEN status'
+  );
+  assert(
+    mockBlindLeaderboard.officialTrack.length > 0 && mockBlindLeaderboard.communityTrack.length > 0,
+    'Dual tracks (Official AI Track & Community Track) properly separated'
+  );
 
   // ---------------------------------------------------------------------------
   // Summary

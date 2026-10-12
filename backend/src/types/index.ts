@@ -1,39 +1,18 @@
-export enum Role {
-  PARTICIPANT = 'PARTICIPANT',
-  ORGANIZER = 'ORGANIZER',
-  JUROR = 'JUROR',
-  ADMIN = 'ADMIN',
-}
+import {
+  Role,
+  CompetitionStatus,
+  SubmissionStatus,
+  PodiumRank,
+  AppealStatus,
+} from '@prisma/client';
 
-export enum CompetitionStatus {
-  DRAFT = 'DRAFT',
-  OPEN = 'OPEN',
-  JUDGING = 'JUDGING',
-  SHORTLISTED = 'SHORTLISTED',
-  RESULTS_PUBLISHED = 'RESULTS_PUBLISHED',
-  ARCHIVED = 'ARCHIVED',
-}
-
-export enum SubmissionStatus {
-  IN_QUEUE = 'IN_QUEUE',
-  SCORED = 'SCORED',
-  SHORTLISTED = 'SHORTLISTED',
-  FLAGGED_DISQUALIFIED = 'FLAGGED_DISQUALIFIED',
-  WITHDRAWN = 'WITHDRAWN',
-}
-
-export enum PodiumRank {
-  FIRST_PLACE = 'FIRST_PLACE',
-  SECOND_PLACE = 'SECOND_PLACE',
-  THIRD_PLACE = 'THIRD_PLACE',
-  HONORABLE_MENTION = 'HONORABLE_MENTION',
-}
-
-export enum AppealStatus {
-  PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
-  REJECTED = 'REJECTED',
-}
+export {
+  Role,
+  CompetitionStatus,
+  SubmissionStatus,
+  PodiumRank,
+  AppealStatus,
+};
 
 export interface RubricWeights {
   composition: number;

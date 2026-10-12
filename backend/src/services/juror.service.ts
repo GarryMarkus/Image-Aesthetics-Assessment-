@@ -86,16 +86,37 @@ export class JurorService {
   }
 
   /**
+   * Validate podium allocations to ensure at least one winner and uniqueness for top 3
+   */
+  static validatePodiums(podiums: PodiumAllocation[]) {
+    if (!podiums || podiums.length === 0) {
+      throw new BadRequestError('At least one podium winner must be selected');
+    }
+    const seenRanks = new Set<string>();
+    for (const p of podiums) {
+      if (p.podiumRank !== PodiumRank.HONORABLE_MENTION) {
+        if (seenRanks.has(p.podiumRank)) {
+          throw new BadRequestError(`Duplicate podium rank detected: ${p.podiumRank}`);
+        }
+        seenRanks.add(p.podiumRank);
+      }
+    }
+    return true;
+  }
+
+  /**
    * Submit juror podium verdicts (1st, 2nd, 3rd, Honorable Mention)
    */
   async submitVerdict(competitionId: string, jurorId: string, podiums: PodiumAllocation[]) {
-    if (podiums.length === 0) {
-      throw new BadRequestError('At least one podium winner must be selected');
-    }
+    JurorService.validatePodiums(podiums);
 
     const comp = await prisma.competition.findUnique({ where: { id: competitionId } });
     if (!comp) {
       throw new NotFoundError('Competition', competitionId);
+    }
+
+    if (comp.status === CompetitionStatus.RESULTS_PUBLISHED || comp.status === CompetitionStatus.ARCHIVED) {
+      throw new BadRequestError(`Cannot submit verdicts when competition is in '${comp.status}' status`);
     }
 
     // Insert or update verdicts
